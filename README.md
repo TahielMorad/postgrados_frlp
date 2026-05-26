@@ -23,7 +23,7 @@
 |---------------------|------------------------------|---------------------------------|--------------------------------|
 | Tu Nombre           | Líder / Desarrollador Principal | [@tuusuario](https://github.com/tuusuario) | tuemail@ejemplo.com           |
 | Laura Arevalo  | Desarrollador Backend        | [@canonLa](https://github.com/canonLa)  |lauracanonarevalo@gmail.com            |
-| Nombre Compañero 2  | Diseñador / Frontend         | [@usuario3](https://github.com/usuario3)   | email3@ejemplo.com            |
+| Pérez Vilmar Matias | Diseñador / Frontend         | [@vmperez2404](https://github.com/vmperez2404)   | vmperez2404@gmail.com         |
 
 ### Reglas básicas del equipo
 
