@@ -21,7 +21,7 @@
 
 | Nombre              | Rol                          | GitHub                          | Email                          |
 |---------------------|------------------------------|---------------------------------|--------------------------------|
-| Tu Nombre           | Líder / Desarrollador Principal | [@tuusuario](https://github.com/tuusuario) | tuemail@ejemplo.com           |
+| Tahiel Morad        | Lider                        | [@TahielMorad](https://github.com/TahielMorad) | tahielmorad@gmail.com          |
 | Laura Arevalo  | Desarrollador Backend        | [@canonLa](https://github.com/canonLa)  |lauracanonarevalo@gmail.com            |
 | Pérez Vilmar Matias | Diseñador / Frontend         | [@vmperez2404](https://github.com/vmperez2404)   | vmperez2404@gmail.com         |
 
