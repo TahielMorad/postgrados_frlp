@@ -24,7 +24,7 @@
 | Tahiel Morad        | Lider                        | [@TahielMorad](https://github.com/TahielMorad) | tahielmorad@gmail.com          |
 | Laura Arevalo  | Desarrollador Backend        | [@canonLa](https://github.com/canonLa)  |lauracanonarevalo@gmail.com            |
 | Pérez Vilmar Matias | Diseñador / Frontend         | [@vmperez2404](https://github.com/vmperez2404)   | vmperez2404@gmail.com         |
-| Joaquin Tachi | Desarrollador Backend              |                                                  | joaquintachi@gmail.com
+| Joaquin Tachi | Desarrollador Backend              | [@joaquintachi](https://github.com/Axlandd) | joaquintachi@gmail.com
 ### Reglas básicas del equipo
 
 - **Commits**: Usa mensajes claros y en presente (ej: "Agrega login con GitHub"). Sigue la convención [Conventional Commits](https://www.conventionalcommits.org) si es posible.
