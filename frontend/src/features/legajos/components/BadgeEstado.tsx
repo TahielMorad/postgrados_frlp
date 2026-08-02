@@ -1,0 +1,23 @@
+import { estadosLegajo } from "../data/workflowLegajo";
+import type { EstadoLegajo } from "../types/legajo";
+
+interface BadgeEstadoProps {
+  estado: EstadoLegajo;
+  estadoActual?: boolean;
+}
+
+export function BadgeEstado({
+  estado,
+  estadoActual = false,
+}: BadgeEstadoProps) {
+  const configuracion = estadosLegajo[estado];
+
+  return (
+    <span
+      aria-current={estadoActual ? "step" : undefined}
+      className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${configuracion.className} ${estadoActual ? "ring-2 ring-blue-600 ring-offset-2" : ""}`}
+    >
+      {configuracion.nombre}
+    </span>
+  );
+}
