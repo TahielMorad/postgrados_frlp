@@ -1,12 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { useNavigate } from "react-router";
 import {
   inscripcionSchema,
   type InscripcionFormData,
 } from "../schemas/inscripcionSchema";
 
 const BORRADOR_KEY = "inscripcion-borrador";
+const BORRADORES_POR_EMAIL_KEY = "inscripcion-borradores-por-email";
 
 const carrerasDisponibles = [
   "Doctorado en Ingeniería",
@@ -49,28 +51,85 @@ const valoresIniciales: InscripcionFormData = {
   porcentajeBeca: "",
 };
 
-function recuperarBorrador(): InscripcionFormData {
-  const borrador = localStorage.getItem(BORRADOR_KEY);
+type EstadoBorrador =
+  { tipo: "exito"; mensaje: string } | { tipo: "error"; mensaje: string };
 
-  if (!borrador) {
-    return valoresIniciales;
+function normalizarEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function leerBorradorActivo(): Partial<InscripcionFormData> | null {
+  const borradorActivo = localStorage.getItem(BORRADOR_KEY);
+
+  if (!borradorActivo) {
+    return null;
   }
 
   try {
-    return {
-      ...valoresIniciales,
-      ...(JSON.parse(borrador) as Partial<InscripcionFormData>),
-    };
+    return JSON.parse(borradorActivo) as Partial<InscripcionFormData>;
   } catch {
     localStorage.removeItem(BORRADOR_KEY);
-    return valoresIniciales;
+    return null;
   }
 }
 
-export function InscripcionForm() {
-  const [borradorGuardado, setBorradorGuardado] = useState(false);
+function leerBorradoresPorEmail(): Record<
+  string,
+  Partial<InscripcionFormData>
+> {
+  const borradoresGuardados = localStorage.getItem(BORRADORES_POR_EMAIL_KEY);
 
-  const valoresPorDefecto = useMemo(() => recuperarBorrador(), []);
+  if (!borradoresGuardados) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(borradoresGuardados) as Record<
+      string,
+      Partial<InscripcionFormData>
+    >;
+  } catch {
+    localStorage.removeItem(BORRADORES_POR_EMAIL_KEY);
+    return {};
+  }
+}
+
+function guardarBorradorLocal(data: InscripcionFormData) {
+  const email = normalizarEmail(data.emailPrincipal);
+  const borradores = leerBorradoresPorEmail();
+
+  borradores[email] = data;
+
+  localStorage.setItem(BORRADOR_KEY, JSON.stringify(data));
+  localStorage.setItem(BORRADORES_POR_EMAIL_KEY, JSON.stringify(borradores));
+}
+
+function recuperarBorradorPorEmail(
+  emailIngresado: string,
+): InscripcionFormData | null {
+  const email = normalizarEmail(emailIngresado);
+  const borradorGuardado = leerBorradoresPorEmail()[email];
+  const borradorActivo = leerBorradorActivo();
+  const borradorAnterior =
+    borradorActivo &&
+    normalizarEmail(borradorActivo.emailPrincipal ?? "") === email
+      ? borradorActivo
+      : null;
+  const borrador = borradorGuardado ?? borradorAnterior;
+
+  if (!borrador) {
+    return null;
+  }
+
+  return { ...valoresIniciales, ...borrador, emailPrincipal: email };
+}
+
+export function InscripcionForm() {
+  const navigate = useNavigate();
+
+  const [estadoBorrador, setEstadoBorrador] = useState<EstadoBorrador | null>(
+    null,
+  );
 
   const {
     register,
@@ -78,10 +137,15 @@ export function InscripcionForm() {
     control,
     setValue,
     getValues,
+    reset,
+    setFocus,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<InscripcionFormData>({
     resolver: zodResolver(inscripcionSchema),
-    defaultValues: valoresPorDefecto,
+    defaultValues: valoresIniciales,
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
   const carrerasSeleccionadas =
@@ -129,27 +193,69 @@ export function InscripcionForm() {
     });
   }
 
-  function guardarBorrador() {
-    localStorage.setItem(BORRADOR_KEY, JSON.stringify(getValues()));
-    setBorradorGuardado(true);
+  async function guardarBorrador() {
+    const emailValido = await trigger("emailPrincipal");
 
-    window.setTimeout(() => {
-      setBorradorGuardado(false);
-    }, 2500);
+    if (!emailValido) {
+      setEstadoBorrador({
+        tipo: "error",
+        mensaje: "Ingresá un correo principal válido para guardar el borrador.",
+      });
+      setFocus("emailPrincipal");
+      return;
+    }
+
+    guardarBorradorLocal(getValues());
+    setEstadoBorrador({
+      tipo: "exito",
+      mensaje: "Borrador guardado en este navegador.",
+    });
+  }
+
+  async function recuperarBorrador() {
+    const emailValido = await trigger("emailPrincipal");
+
+    if (!emailValido) {
+      setEstadoBorrador({
+        tipo: "error",
+        mensaje:
+          "Ingresá el correo principal del borrador que querés recuperar.",
+      });
+      setFocus("emailPrincipal");
+      return;
+    }
+
+    const borrador = recuperarBorradorPorEmail(getValues("emailPrincipal"));
+
+    if (!borrador) {
+      setEstadoBorrador({
+        tipo: "error",
+        mensaje:
+          "No hay un borrador guardado para este correo en el navegador.",
+      });
+      return;
+    }
+
+    reset(borrador);
+    setEstadoBorrador({
+      tipo: "exito",
+      mensaje: "Borrador recuperado correctamente.",
+    });
   }
 
   function onSubmit(data: InscripcionFormData) {
-    localStorage.setItem(BORRADOR_KEY, JSON.stringify(data));
+    guardarBorradorLocal(data);
 
-    console.info("Datos de inscripción validados:", data);
-
-    alert(
-      "Los datos fueron validados. El siguiente paso será cargar la documentación.",
-    );
+    navigate("/inscripcion/documentos");
   }
 
-  const inputClassName =
-    "mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100";
+  function inputClassName(tieneError: boolean): string {
+    const estadoClassName = tieneError
+      ? "border-red-500 focus:border-red-600 focus:ring-red-100"
+      : "border-slate-300 focus:border-blue-600 focus:ring-blue-100";
+
+    return `mt-2 w-full rounded-md border bg-white px-3 py-2 text-slate-900 outline-none focus:ring-2 ${estadoClassName}`;
+  }
 
   const errorClassName = "mt-1 text-sm text-red-700";
 
@@ -177,7 +283,8 @@ export function InscripcionForm() {
               type="text"
               autoComplete="given-name"
               {...register("nombre")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.nombre)}
+              className={inputClassName(Boolean(errors.nombre))}
             />
             {errors.nombre && (
               <p className={errorClassName}>{errors.nombre.message}</p>
@@ -196,7 +303,8 @@ export function InscripcionForm() {
               type="text"
               autoComplete="family-name"
               {...register("apellido")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.apellido)}
+              className={inputClassName(Boolean(errors.apellido))}
             />
             {errors.apellido && (
               <p className={errorClassName}>{errors.apellido.message}</p>
@@ -214,7 +322,8 @@ export function InscripcionForm() {
               id="nacionalidad"
               type="text"
               {...register("nacionalidad")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.nacionalidad)}
+              className={inputClassName(Boolean(errors.nacionalidad))}
             />
             {errors.nacionalidad && (
               <p className={errorClassName}>{errors.nacionalidad.message}</p>
@@ -231,7 +340,8 @@ export function InscripcionForm() {
             <select
               id="tipoDocumento"
               {...register("tipoDocumento")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.tipoDocumento)}
+              className={inputClassName(Boolean(errors.tipoDocumento))}
             >
               <option value="DNI">DNI</option>
               <option value="PASAPORTE">Pasaporte</option>
@@ -251,10 +361,16 @@ export function InscripcionForm() {
             <input
               id="numeroDocumento"
               type="text"
+              inputMode="numeric"
+              maxLength={8}
               autoComplete="off"
               {...register("numeroDocumento")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.numeroDocumento)}
+              className={inputClassName(Boolean(errors.numeroDocumento))}
             />
+            <p className="mt-1 text-sm text-slate-500">
+              Ingresá 7 u 8 dígitos, sin puntos.
+            </p>
             {errors.numeroDocumento && (
               <p className={errorClassName}>{errors.numeroDocumento.message}</p>
             )}
@@ -278,7 +394,8 @@ export function InscripcionForm() {
               type="tel"
               autoComplete="tel"
               {...register("telefonoMovil")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.telefonoMovil)}
+              className={inputClassName(Boolean(errors.telefonoMovil))}
             />
             {errors.telefonoMovil && (
               <p className={errorClassName}>{errors.telefonoMovil.message}</p>
@@ -296,7 +413,8 @@ export function InscripcionForm() {
               id="telefonoFijo"
               type="tel"
               {...register("telefonoFijo")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.telefonoFijo)}
+              className={inputClassName(Boolean(errors.telefonoFijo))}
             />
             {errors.telefonoFijo && (
               <p className={errorClassName}>{errors.telefonoFijo.message}</p>
@@ -315,11 +433,20 @@ export function InscripcionForm() {
               type="email"
               autoComplete="email"
               {...register("emailPrincipal")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.emailPrincipal)}
+              className={inputClassName(Boolean(errors.emailPrincipal))}
             />
             {errors.emailPrincipal && (
               <p className={errorClassName}>{errors.emailPrincipal.message}</p>
             )}
+
+            <button
+              type="button"
+              onClick={recuperarBorrador}
+              className="mt-3 text-sm font-medium text-blue-700 hover:underline"
+            >
+              Recuperar borrador de este correo
+            </button>
           </div>
 
           <div>
@@ -333,7 +460,8 @@ export function InscripcionForm() {
               id="emailAlternativo"
               type="email"
               {...register("emailAlternativo")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.emailAlternativo)}
+              className={inputClassName(Boolean(errors.emailAlternativo))}
             />
             {errors.emailAlternativo && (
               <p className={errorClassName}>
@@ -360,7 +488,8 @@ export function InscripcionForm() {
               type="text"
               autoComplete="street-address"
               {...register("direccion")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.direccion)}
+              className={inputClassName(Boolean(errors.direccion))}
             />
             {errors.direccion && (
               <p className={errorClassName}>{errors.direccion.message}</p>
@@ -379,7 +508,8 @@ export function InscripcionForm() {
               type="text"
               autoComplete="address-level2"
               {...register("ciudad")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.ciudad)}
+              className={inputClassName(Boolean(errors.ciudad))}
             />
             {errors.ciudad && (
               <p className={errorClassName}>{errors.ciudad.message}</p>
@@ -398,7 +528,8 @@ export function InscripcionForm() {
               type="text"
               autoComplete="address-level1"
               {...register("provincia")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.provincia)}
+              className={inputClassName(Boolean(errors.provincia))}
             />
             {errors.provincia && (
               <p className={errorClassName}>{errors.provincia.message}</p>
@@ -417,7 +548,8 @@ export function InscripcionForm() {
               type="text"
               autoComplete="country-name"
               {...register("pais")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.pais)}
+              className={inputClassName(Boolean(errors.pais))}
             />
             {errors.pais && (
               <p className={errorClassName}>{errors.pais.message}</p>
@@ -443,7 +575,8 @@ export function InscripcionForm() {
               id="tituloGrado"
               type="text"
               {...register("tituloGrado")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.tituloGrado)}
+              className={inputClassName(Boolean(errors.tituloGrado))}
             />
             {errors.tituloGrado && (
               <p className={errorClassName}>{errors.tituloGrado.message}</p>
@@ -461,14 +594,21 @@ export function InscripcionForm() {
               id="tituloPosgrado"
               type="text"
               {...register("tituloPosgrado")}
-              className={inputClassName}
+              className={inputClassName(false)}
             />
           </div>
         </div>
       </section>
 
       <section className="border-t border-slate-200 pt-8">
-        <fieldset>
+        <fieldset
+          aria-invalid={Boolean(errors.carreras)}
+          className={
+            errors.carreras
+              ? "rounded-md border border-red-400 bg-red-50/40 p-4"
+              : undefined
+          }
+        >
           <legend className="text-xl font-semibold text-slate-900">
             Carrera elegida *
           </legend>
@@ -486,7 +626,11 @@ export function InscripcionForm() {
               return (
                 <label
                   key={carrera}
-                  className="flex items-start gap-3 rounded-md border border-slate-200 p-3"
+                  className={
+                    errors.carreras
+                      ? "flex items-start gap-3 rounded-md border border-red-300 bg-white p-3"
+                      : "flex items-start gap-3 rounded-md border border-slate-200 p-3"
+                  }
                 >
                   <input
                     type="checkbox"
@@ -523,7 +667,8 @@ export function InscripcionForm() {
             <select
               id="medioConocimiento"
               {...register("medioConocimiento")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.medioConocimiento)}
+              className={inputClassName(Boolean(errors.medioConocimiento))}
             >
               <option value="">Seleccioná una opción</option>
               {mediosConocimiento.map((medio) => (
@@ -550,7 +695,8 @@ export function InscripcionForm() {
               id="motivacion"
               rows={5}
               {...register("motivacion")}
-              className={inputClassName}
+              aria-invalid={Boolean(errors.motivacion)}
+              className={inputClassName(Boolean(errors.motivacion))}
               placeholder="Contanos por qué querés realizar este posgrado."
             />
             <div className="mt-1 flex justify-between gap-4 text-sm">
@@ -591,7 +737,8 @@ export function InscripcionForm() {
                 <select
                   id="porcentajeBeca"
                   {...register("porcentajeBeca")}
-                  className={inputClassName}
+                  aria-invalid={Boolean(errors.porcentajeBeca)}
+                  className={inputClassName(Boolean(errors.porcentajeBeca))}
                 >
                   <option value="">Seleccioná una opción</option>
                   <option value="30">30 %</option>
@@ -603,22 +750,23 @@ export function InscripcionForm() {
                   </p>
                 )}
 
-                <p className="mt-2 text-sm text-slate-600">
-                  El formulario de beca se adjuntará en la etapa de
-                  documentación.
-                </p>
+
               </div>
             )}
           </div>
         </div>
       </section>
 
-      {borradorGuardado && (
+      {estadoBorrador && (
         <p
-          role="status"
-          className="rounded-md bg-green-50 p-3 text-sm text-green-800"
+          role={estadoBorrador.tipo === "error" ? "alert" : "status"}
+          className={
+            estadoBorrador.tipo === "error"
+              ? "rounded-md bg-red-50 p-3 text-sm text-red-800"
+              : "rounded-md bg-green-50 p-3 text-sm text-green-800"
+          }
         >
-          Borrador guardado en este navegador.
+          {estadoBorrador.mensaje}
         </p>
       )}
 

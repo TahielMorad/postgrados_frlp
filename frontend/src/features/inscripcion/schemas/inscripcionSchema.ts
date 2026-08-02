@@ -21,8 +21,7 @@ export const inscripcionSchema = z
     numeroDocumento: z
       .string()
       .trim()
-      .min(7, "El documento debe tener al menos 7 caracteres")
-      .max(20, "El documento no puede superar los 20 caracteres"),
+      .regex(/^\d{7,8}$/, "El documento debe tener 7 u 8 dígitos"),
 
     telefonoMovil: z
       .string()
@@ -37,11 +36,17 @@ export const inscripcionSchema = z
         "Ingresá un teléfono fijo válido",
       ),
 
-    emailPrincipal: z.email("Ingresá un correo electrónico válido"),
+    emailPrincipal: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .pipe(z.email("Ingresá un correo electrónico válido")),
 
-    emailAlternativo: z.email(
-      "Ingresá un correo electrónico alternativo válido",
-    ),
+    emailAlternativo: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .pipe(z.email("Ingresá un correo electrónico alternativo válido")),
 
     direccion: z.string().trim().min(3, "Ingresá una dirección válida"),
 
