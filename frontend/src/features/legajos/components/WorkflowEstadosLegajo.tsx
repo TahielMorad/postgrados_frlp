@@ -93,13 +93,6 @@ export function WorkflowEstadosLegajo({
             </li>
           ))}
         </ul>
-
-        <p
-          role="note"
-          className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"
-        >
-          
-        </p>
       </section>
 
       <section aria-labelledby="transiciones-title">
