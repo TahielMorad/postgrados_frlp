@@ -27,3 +27,26 @@ export interface TransicionLegajo {
   automatica?: boolean;
   aclaracion?: string;
 }
+
+export interface LegajoListado {
+  id: string;
+  numeroLegajo: string | null;
+  apellido: string;
+  nombre: string;
+  dni: string;
+  estado: EstadoLegajo;
+  cohorte: string;
+  carrera: string;
+  tieneBeca: boolean;
+  fechaInscripcion: string;
+}
+
+export type FiltroBeca = "" | "SI" | "NO";
+
+export interface FiltrosLegajo {
+  busqueda: string;
+  estado: EstadoLegajo | "";
+  cohorte: string;
+  carrera: string;
+  beca: FiltroBeca;
+}
