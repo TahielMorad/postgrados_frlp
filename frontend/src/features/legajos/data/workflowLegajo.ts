@@ -10,7 +10,7 @@ export const estadosLegajo: Record<EstadoLegajo, EstadoLegajoConfig> = {
     nombre: "Borrador",
     descripcion:
       "La inscripción todavía puede ser completada por el aspirante.",
-    className: "border-slate-300 bg-slate-100 text-slate-800",
+    className: "border-neutral-300 bg-neutral-100 text-neutral-800",
   },
   PENDIENTE: {
     nombre: "Pendiente",
@@ -20,7 +20,7 @@ export const estadosLegajo: Record<EstadoLegajo, EstadoLegajoConfig> = {
   EN_REVISION: {
     nombre: "En Revisión",
     descripcion: "El coordinador está evaluando el legajo y sus documentos.",
-    className: "border-blue-300 bg-blue-100 text-blue-900",
+    className: "border-utn-300 bg-utn-100 text-utn-950",
   },
   OBSERVADO: {
     nombre: "Observado",
@@ -60,7 +60,7 @@ export const estadosLegajo: Record<EstadoLegajo, EstadoLegajoConfig> = {
   BAJA: {
     nombre: "Baja",
     descripcion: "El coordinador dio de baja al estudiante.",
-    className: "border-slate-400 bg-slate-200 text-slate-900",
+    className: "border-neutral-400 bg-neutral-200 text-neutral-900",
   },
 };
 

@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/components/Button";
 import type { DocumentoId, DocumentoRequerido } from "../types/documento";
 import { formatearTamanoArchivo } from "../utils/validarArchivo";
 
@@ -18,6 +19,7 @@ export function DocumentUploadField({
 }: DocumentUploadFieldProps) {
   const inputId = `archivo-${documento.id}`;
   const errorId = `error-${documento.id}`;
+  const descriptionId = `descripcion-${documento.id}`;
 
   function abrirVistaPrevia() {
     if (!archivo) {
@@ -37,30 +39,35 @@ export function DocumentUploadField({
     <article
       className={
         error
-          ? "rounded-lg border border-red-400 bg-red-50/40 p-5"
-          : "rounded-lg border border-slate-200 p-5"
+          ? "rounded-lg border border-red-400 bg-red-50/40 p-4 shadow-xs sm:p-5"
+          : "rounded-lg border border-neutral-200 bg-white p-4 shadow-xs sm:p-5"
       }
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-semibold text-slate-900">{documento.nombre}</h3>
+            <h3 className="font-display text-lg font-bold text-neutral-950">
+              {documento.nombre}
+            </h3>
 
-            <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+            <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-800">
               Obligatorio
             </span>
           </div>
 
-          <p className="mt-1 text-sm text-slate-600">{documento.descripcion}</p>
+          <p id={descriptionId} className="mt-1 text-sm text-neutral-600">
+            {documento.descripcion}
+          </p>
         </div>
 
         <span
+          aria-live="polite"
           className={
             archivo
-              ? "rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700"
+              ? "rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800"
               : error
-                ? "rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700"
-                : "rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700"
+                ? "rounded-full border border-red-200 bg-red-50 px-3 py-1 text-sm font-semibold text-red-800"
+                : "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-900"
           }
         >
           {archivo ? "Cargado" : "Pendiente"}
@@ -68,25 +75,26 @@ export function DocumentUploadField({
       </div>
 
       {archivo ? (
-        <div className="mt-4 rounded-md bg-slate-50 p-4">
-          <p className="break-all text-sm font-medium text-slate-800">
+        <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+          <p className="break-all text-sm font-semibold text-neutral-900">
             {archivo.name}
           </p>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-neutral-600">
             {formatearTamanoArchivo(archivo.size)}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-3">
-            <button
+            <Button
               type="button"
               onClick={abrirVistaPrevia}
-              className="rounded-md border border-blue-300 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
+              variant="secondary"
+              size="sm"
             >
               Ver PDF
-            </button>
+            </Button>
 
-            <label className="cursor-pointer rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+            <label className="ui-button ui-button-secondary ui-button-sm cursor-pointer focus-within:outline-none focus-within:ring-3 focus-within:ring-utn-300 focus-within:ring-offset-2">
               Reemplazar
               <input
                 id={inputId}
@@ -94,7 +102,9 @@ export function DocumentUploadField({
                 accept="application/pdf,.pdf"
                 className="sr-only"
                 aria-invalid={Boolean(error)}
-                aria-describedby={error ? errorId : undefined}
+                aria-describedby={
+                  error ? `${descriptionId} ${errorId}` : descriptionId
+                }
                 onClick={(event) => {
                   event.currentTarget.value = "";
                 }}
@@ -108,22 +118,23 @@ export function DocumentUploadField({
               />
             </label>
 
-            <button
+            <Button
               type="button"
               onClick={() => onEliminar(documento.id)}
-              className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+              variant="danger"
+              size="sm"
             >
               Eliminar
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
-        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-300 px-6 py-8 text-center hover:border-blue-400 hover:bg-blue-50">
-          <span className="font-medium text-blue-700">
+        <label className="mt-4 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50/60 px-5 py-8 text-center transition-colors hover:border-utn-500 hover:bg-utn-50 focus-within:border-utn-600 focus-within:bg-utn-50 focus-within:outline-none focus-within:ring-3 focus-within:ring-utn-200 sm:px-6">
+          <span className="font-semibold text-utn-800">
             Seleccionar archivo PDF
           </span>
 
-          <span className="mt-1 text-sm text-slate-500">
+          <span className="mt-1 text-sm text-neutral-600">
             Tamaño máximo: 5 MB
           </span>
 
@@ -133,7 +144,9 @@ export function DocumentUploadField({
             accept="application/pdf,.pdf"
             className="sr-only"
             aria-invalid={Boolean(error)}
-            aria-describedby={error ? errorId : undefined}
+            aria-describedby={
+              error ? `${descriptionId} ${errorId}` : descriptionId
+            }
             onClick={(event) => {
               event.currentTarget.value = "";
             }}
@@ -149,7 +162,7 @@ export function DocumentUploadField({
       )}
 
       {error && (
-        <p id={errorId} role="alert" className="mt-3 text-sm text-red-700">
+        <p id={errorId} role="alert" className="ui-error mt-3">
           {error}
         </p>
       )}

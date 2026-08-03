@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { Button } from "../../../shared/components/Button";
+import { FeedbackMessage } from "../../../shared/components/FeedbackMessage";
 import {
   documentoFormularioBeca,
   documentosObligatorios,
@@ -144,11 +146,11 @@ export function DocumentUploadForm() {
 
   return (
     <section className="space-y-6">
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+      <FeedbackMessage tone="info">
         Los archivos se mantienen temporalmente mientras esta página permanezca
         abierta. La carga definitiva se realizará cuando el frontend se conecte
         con el backend.
-      </div>
+      </FeedbackMessage>
 
       <div className="space-y-4">
         {documentos.map((documento) => (
@@ -164,56 +166,33 @@ export function DocumentUploadForm() {
       </div>
 
       {documentosFaltantes.length > 0 && (
-        <div
+        <FeedbackMessage
           role={envioIntentado ? "alert" : undefined}
-          className={
-            envioIntentado
-              ? "rounded-md border border-red-300 bg-red-50 p-4"
-              : "rounded-md border border-amber-200 bg-amber-50 p-4"
-          }
+          tone={envioIntentado ? "error" : "warning"}
         >
-          <p
-            className={
-              envioIntentado
-                ? "font-medium text-red-900"
-                : "font-medium text-amber-900"
-            }
-          >
+          <p className="font-semibold">
             Faltan {documentosFaltantes.length} documentos obligatorios.
           </p>
 
-          <ul
-            className={
-              envioIntentado
-                ? "mt-2 list-inside list-disc text-sm text-red-800"
-                : "mt-2 list-inside list-disc text-sm text-amber-800"
-            }
-          >
+          <ul className="mt-2 list-inside list-disc">
             {documentosFaltantes.map((documento) => (
               <li key={documento.id}>{documento.nombre}</li>
             ))}
           </ul>
-        </div>
+        </FeedbackMessage>
       )}
 
       {documentacionValidada && (
-        <p
-          role="status"
-          className="rounded-md border border-green-200 bg-green-50 p-4 text-green-800"
-        >
+        <FeedbackMessage role="status" tone="success">
           La documentación obligatoria está completa. El próximo paso será
           revisar y confirmar la inscripción.
-        </p>
+        </FeedbackMessage>
       )}
 
-      <div className="flex justify-end border-t border-slate-200 pt-6">
-        <button
-          type="button"
-          onClick={validarDocumentacion}
-          className="rounded-md bg-blue-700 px-5 py-2.5 font-medium text-white hover:bg-blue-800"
-        >
+      <div className="flex justify-end border-t border-neutral-200 pt-6">
+        <Button type="button" onClick={validarDocumentacion}>
           Enviar a revisión
-        </button>
+        </Button>
       </div>
     </section>
   );

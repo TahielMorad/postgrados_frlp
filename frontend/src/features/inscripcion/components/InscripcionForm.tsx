@@ -2,6 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { Button } from "../../../shared/components/Button";
+import { FeedbackMessage } from "../../../shared/components/FeedbackMessage";
 import {
   inscripcionSchema,
   type InscripcionFormData,
@@ -250,32 +252,19 @@ export function InscripcionForm() {
   }
 
   function inputClassName(tieneError: boolean): string {
-    const estadoClassName = tieneError
-      ? "border-red-500 focus:border-red-600 focus:ring-red-100"
-      : "border-slate-300 focus:border-blue-600 focus:ring-blue-100";
-
-    return `mt-2 w-full rounded-md border bg-white px-3 py-2 text-slate-900 outline-none focus:ring-2 ${estadoClassName}`;
+    return `ui-control ${tieneError ? "ui-control-error" : ""}`;
   }
 
-  const errorClassName = "mt-1 text-sm text-red-700";
+  const errorClassName = "ui-error";
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-8 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
-      noValidate
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="ui-form-card" noValidate>
       <section>
-        <h2 className="text-xl font-semibold text-slate-900">
-          Datos personales
-        </h2>
+        <h2 className="ui-section-title">Datos personales</h2>
 
         <div className="mt-5 grid gap-5 md:grid-cols-2">
           <div>
-            <label
-              htmlFor="nombre"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="nombre" className="ui-label">
               Nombre *
             </label>
             <input
@@ -292,10 +281,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="apellido"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="apellido" className="ui-label">
               Apellido *
             </label>
             <input
@@ -312,10 +298,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="nacionalidad"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="nacionalidad" className="ui-label">
               Nacionalidad *
             </label>
             <input
@@ -331,10 +314,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="tipoDocumento"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="tipoDocumento" className="ui-label">
               Tipo de documento *
             </label>
             <select
@@ -352,10 +332,7 @@ export function InscripcionForm() {
           </div>
 
           <div className="md:col-span-2">
-            <label
-              htmlFor="numeroDocumento"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="numeroDocumento" className="ui-label">
               Número de documento *
             </label>
             <input
@@ -368,9 +345,7 @@ export function InscripcionForm() {
               aria-invalid={Boolean(errors.numeroDocumento)}
               className={inputClassName(Boolean(errors.numeroDocumento))}
             />
-            <p className="mt-1 text-sm text-slate-500">
-              Ingresá 7 u 8 dígitos, sin puntos.
-            </p>
+            <p className="ui-help">Ingresá 7 u 8 dígitos, sin puntos.</p>
             {errors.numeroDocumento && (
               <p className={errorClassName}>{errors.numeroDocumento.message}</p>
             )}
@@ -378,15 +353,12 @@ export function InscripcionForm() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 pt-8">
-        <h2 className="text-xl font-semibold text-slate-900">Contacto</h2>
+      <section className="ui-form-section">
+        <h2 className="ui-section-title">Contacto</h2>
 
         <div className="mt-5 grid gap-5 md:grid-cols-2">
           <div>
-            <label
-              htmlFor="telefonoMovil"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="telefonoMovil" className="ui-label">
               Teléfono móvil *
             </label>
             <input
@@ -403,10 +375,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="telefonoFijo"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="telefonoFijo" className="ui-label">
               Teléfono fijo
             </label>
             <input
@@ -422,10 +391,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="emailPrincipal"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="emailPrincipal" className="ui-label">
               Correo principal *
             </label>
             <input
@@ -443,17 +409,14 @@ export function InscripcionForm() {
             <button
               type="button"
               onClick={recuperarBorrador}
-              className="mt-3 text-sm font-medium text-blue-700 hover:underline"
+              className="ui-text-link mt-2 text-sm"
             >
               Recuperar borrador de este correo
             </button>
           </div>
 
           <div>
-            <label
-              htmlFor="emailAlternativo"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="emailAlternativo" className="ui-label">
               Correo alternativo *
             </label>
             <input
@@ -472,15 +435,12 @@ export function InscripcionForm() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 pt-8">
-        <h2 className="text-xl font-semibold text-slate-900">Domicilio</h2>
+      <section className="ui-form-section">
+        <h2 className="ui-section-title">Domicilio</h2>
 
         <div className="mt-5 grid gap-5 md:grid-cols-2">
           <div className="md:col-span-2">
-            <label
-              htmlFor="direccion"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="direccion" className="ui-label">
               Dirección *
             </label>
             <input
@@ -497,10 +457,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="ciudad"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="ciudad" className="ui-label">
               Ciudad *
             </label>
             <input
@@ -517,10 +474,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="provincia"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="provincia" className="ui-label">
               Provincia *
             </label>
             <input
@@ -537,10 +491,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="pais"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="pais" className="ui-label">
               País *
             </label>
             <input
@@ -558,17 +509,12 @@ export function InscripcionForm() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 pt-8">
-        <h2 className="text-xl font-semibold text-slate-900">
-          Formación académica
-        </h2>
+      <section className="ui-form-section">
+        <h2 className="ui-section-title">Formación académica</h2>
 
         <div className="mt-5 grid gap-5 md:grid-cols-2">
           <div>
-            <label
-              htmlFor="tituloGrado"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="tituloGrado" className="ui-label">
               Título de grado *
             </label>
             <input
@@ -584,10 +530,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="tituloPosgrado"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="tituloPosgrado" className="ui-label">
               Título de posgrado
             </label>
             <input
@@ -600,22 +543,18 @@ export function InscripcionForm() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 pt-8">
+      <section className="ui-form-section">
         <fieldset
           aria-invalid={Boolean(errors.carreras)}
           className={
             errors.carreras
-              ? "rounded-md border border-red-400 bg-red-50/40 p-4"
-              : undefined
+              ? "rounded-lg border border-red-400 bg-red-50/40 p-4 sm:p-5"
+              : "rounded-lg border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5"
           }
         >
-          <legend className="text-xl font-semibold text-slate-900">
-            Carrera elegida *
-          </legend>
+          <legend className="ui-section-title">Carrera elegida *</legend>
 
-          <p className="mt-1 text-sm text-slate-600">
-            Podés seleccionar hasta dos carreras.
-          </p>
+          <p className="ui-help">Podés seleccionar hasta dos carreras.</p>
 
           <div className="mt-4 space-y-3">
             {carrerasDisponibles.map((carrera) => {
@@ -628,8 +567,10 @@ export function InscripcionForm() {
                   key={carrera}
                   className={
                     errors.carreras
-                      ? "flex items-start gap-3 rounded-md border border-red-300 bg-white p-3"
-                      : "flex items-start gap-3 rounded-md border border-slate-200 p-3"
+                      ? "flex cursor-pointer items-start gap-3 rounded-md border border-red-300 bg-white p-3 transition-colors focus-within:ring-3 focus-within:ring-red-200"
+                      : seleccionada
+                        ? "flex cursor-pointer items-start gap-3 rounded-md border border-utn-400 bg-utn-50 p-3 transition-colors focus-within:ring-3 focus-within:ring-utn-200"
+                        : "flex cursor-pointer items-start gap-3 rounded-md border border-neutral-200 bg-white p-3 transition-colors hover:border-utn-300 hover:bg-utn-50/60 focus-within:ring-3 focus-within:ring-utn-200"
                   }
                 >
                   <input
@@ -637,9 +578,11 @@ export function InscripcionForm() {
                     checked={seleccionada}
                     disabled={deshabilitada}
                     onChange={() => alternarCarrera(carrera)}
-                    className="mt-1 h-4 w-4"
+                    className="ui-checkbox mt-0.5"
                   />
-                  <span className="text-sm text-slate-800">{carrera}</span>
+                  <span className="text-sm leading-5 text-neutral-800">
+                    {carrera}
+                  </span>
                 </label>
               );
             })}
@@ -651,17 +594,12 @@ export function InscripcionForm() {
         </fieldset>
       </section>
 
-      <section className="border-t border-slate-200 pt-8">
-        <h2 className="text-xl font-semibold text-slate-900">
-          Información adicional
-        </h2>
+      <section className="ui-form-section">
+        <h2 className="ui-section-title">Información adicional</h2>
 
         <div className="mt-5 space-y-5">
           <div>
-            <label
-              htmlFor="medioConocimiento"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="medioConocimiento" className="ui-label">
               ¿Cómo conociste la oferta? *
             </label>
             <select
@@ -685,10 +623,7 @@ export function InscripcionForm() {
           </div>
 
           <div>
-            <label
-              htmlFor="motivacion"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="motivacion" className="ui-label">
               Motivación *
             </label>
             <textarea
@@ -699,11 +634,13 @@ export function InscripcionForm() {
               className={inputClassName(Boolean(errors.motivacion))}
               placeholder="Contanos por qué querés realizar este posgrado."
             />
-            <div className="mt-1 flex justify-between gap-4 text-sm">
-              <span className="text-slate-500">Mínimo 50 caracteres</span>
+            <div className="mt-1.5 flex justify-between gap-4 text-sm">
+              <span className="text-neutral-600">Mínimo 50 caracteres</span>
               <span
                 className={
-                  motivacion.length >= 50 ? "text-green-700" : "text-slate-500"
+                  motivacion.length >= 50
+                    ? "font-medium text-emerald-800"
+                    : "text-neutral-600"
                 }
               >
                 {motivacion.length} caracteres
@@ -714,24 +651,21 @@ export function InscripcionForm() {
             )}
           </div>
 
-          <div className="rounded-md border border-slate-200 p-4">
+          <div className="rounded-lg border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5">
             <label className="flex items-center gap-3">
               <input
                 type="checkbox"
                 {...register("solicitaBeca")}
-                className="h-4 w-4"
+                className="ui-checkbox"
               />
-              <span className="font-medium text-slate-800">
+              <span className="font-semibold text-neutral-800">
                 Solicito una beca
               </span>
             </label>
 
             {solicitaBeca && (
               <div className="mt-4">
-                <label
-                  htmlFor="porcentajeBeca"
-                  className="block text-sm font-medium text-slate-700"
-                >
+                <label htmlFor="porcentajeBeca" className="ui-label">
                   Porcentaje solicitado *
                 </label>
                 <select
@@ -749,8 +683,6 @@ export function InscripcionForm() {
                     {errors.porcentajeBeca.message}
                   </p>
                 )}
-
-
               </div>
             )}
           </div>
@@ -758,34 +690,22 @@ export function InscripcionForm() {
       </section>
 
       {estadoBorrador && (
-        <p
+        <FeedbackMessage
           role={estadoBorrador.tipo === "error" ? "alert" : "status"}
-          className={
-            estadoBorrador.tipo === "error"
-              ? "rounded-md bg-red-50 p-3 text-sm text-red-800"
-              : "rounded-md bg-green-50 p-3 text-sm text-green-800"
-          }
+          tone={estadoBorrador.tipo === "error" ? "error" : "success"}
         >
           {estadoBorrador.mensaje}
-        </p>
+        </FeedbackMessage>
       )}
 
-      <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          onClick={guardarBorrador}
-          className="rounded-md border border-slate-300 px-5 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
-        >
+      <div className="flex flex-col-reverse gap-3 border-t border-neutral-200 pt-6 sm:flex-row sm:justify-end">
+        <Button type="button" onClick={guardarBorrador} variant="secondary">
           Guardar borrador
-        </button>
+        </Button>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-md bg-blue-700 px-5 py-2.5 font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button type="submit" loading={isSubmitting}>
           Continuar a documentación
-        </button>
+        </Button>
       </div>
     </form>
   );

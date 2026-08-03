@@ -1,1 +1,177 @@
 @import "tailwindcss";
+
+@theme {
+  --color-utn-50: #eff9fd;
+  --color-utn-100: #ddf2fb;
+  --color-utn-200: #b8e5f7;
+  --color-utn-300: #7ad0ee;
+  --color-utn-400: #32b2df;
+  --color-utn-500: #0a8ccc;
+  --color-utn-600: #0878ad;
+  --color-utn-700: #075f8a;
+  --color-utn-800: #084f70;
+  --color-utn-900: #0b425c;
+  --color-utn-950: #072a3d;
+
+  --font-sans:
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-display:
+    "Arial Narrow", "Roboto Condensed", "Segoe UI", Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    min-width: 320px;
+    background: #f5f5f5;
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    background: #f5f5f5;
+    color: #171717;
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  ::selection {
+    background: var(--color-utn-200);
+    color: var(--color-utn-950);
+  }
+}
+
+@layer components {
+  .ui-surface {
+    @apply rounded-xl border border-neutral-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_10px_30px_rgba(10,42,61,0.05)];
+  }
+
+  .ui-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border font-semibold shadow-xs transition-colors duration-150 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-utn-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55;
+  }
+
+  .ui-button-primary {
+    @apply border-utn-700 bg-utn-700 text-white hover:border-utn-800 hover:bg-utn-800 active:bg-utn-900;
+  }
+
+  .ui-button-secondary {
+    @apply border-neutral-300 bg-white text-neutral-800 hover:border-utn-500 hover:bg-utn-50 hover:text-utn-800 active:bg-utn-100;
+  }
+
+  .ui-button-danger {
+    @apply border-red-700 bg-white text-red-800 hover:bg-red-50 active:bg-red-100;
+  }
+
+  .ui-button-success {
+    @apply border-emerald-700 bg-emerald-700 text-white hover:border-emerald-800 hover:bg-emerald-800 active:bg-emerald-900;
+  }
+
+  .ui-button-ghost {
+    @apply border-transparent bg-transparent text-utn-800 shadow-none hover:bg-utn-50 active:bg-utn-100;
+  }
+
+  .ui-button-sm {
+    @apply min-h-10 px-3.5 py-2 text-sm;
+  }
+
+  .ui-button-md {
+    @apply min-h-11 px-5 py-2.5 text-sm sm:text-base;
+  }
+
+  .ui-button-lg {
+    @apply min-h-12 px-6 py-3 text-base;
+  }
+
+  .ui-form-card {
+    @apply space-y-8 rounded-xl border border-neutral-200 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_10px_30px_rgba(10,42,61,0.05)] sm:p-7 lg:p-8;
+  }
+
+  .ui-form-section {
+    @apply border-t border-neutral-200 pt-8;
+  }
+
+  .ui-section-title {
+    @apply font-display text-xl font-bold tracking-tight text-neutral-950 sm:text-2xl;
+  }
+
+  .ui-label {
+    @apply block text-sm font-semibold text-neutral-800;
+  }
+
+  .ui-control {
+    @apply mt-2 min-h-11 w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-neutral-950 shadow-xs outline-none transition-colors placeholder:text-neutral-400 hover:border-neutral-400 focus:border-utn-600 focus:ring-3 focus:ring-utn-100 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500;
+  }
+
+  .ui-control-error {
+    @apply border-red-600 bg-red-50/40 hover:border-red-700 focus:border-red-700 focus:ring-red-100;
+  }
+
+  .ui-checkbox {
+    @apply h-4 w-4 shrink-0 cursor-pointer accent-utn-700 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-utn-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .ui-help {
+    @apply mt-1.5 text-sm leading-5 text-neutral-600;
+  }
+
+  .ui-error {
+    @apply mt-1.5 text-sm font-medium leading-5 text-red-800;
+  }
+
+  .ui-eyebrow {
+    @apply mb-2 text-xs font-bold tracking-[0.18em] text-utn-700 uppercase sm:text-sm;
+  }
+
+  .ui-back-link {
+    @apply inline-flex min-h-10 items-center gap-2 rounded-sm font-semibold text-utn-800 underline-offset-4 transition-colors hover:text-utn-950 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-utn-300 focus-visible:ring-offset-2;
+  }
+
+  .ui-text-link {
+    @apply inline-flex min-h-10 items-center rounded-sm font-semibold text-utn-800 underline-offset-4 transition-colors hover:text-utn-950 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-utn-300 focus-visible:ring-offset-2;
+  }
+
+  .ui-table-shell {
+    @apply overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_10px_30px_rgba(10,42,61,0.05)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-utn-300 focus-visible:ring-offset-2;
+  }
+
+  .ui-table {
+    @apply min-w-full divide-y divide-neutral-200 text-left text-sm;
+  }
+
+  .ui-table thead {
+    @apply bg-neutral-950 text-white;
+  }
+
+  .ui-table thead th {
+    @apply px-4 py-3.5 text-xs font-bold tracking-wide uppercase;
+  }
+
+  .ui-table tbody {
+    @apply divide-y divide-neutral-200 bg-white;
+  }
+
+  .ui-table tbody tr {
+    @apply transition-colors odd:bg-white even:bg-neutral-50/60 hover:bg-utn-50;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
