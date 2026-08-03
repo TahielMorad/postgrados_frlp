@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Button } from "../../../shared/components/Button";
 import type {
   EstadoLegajo,
   FiltroBeca,
@@ -18,8 +19,7 @@ interface FiltrosLegajoProps {
   onAplicar: (filtros: FiltrosLegajoValues) => void;
 }
 
-const inputClassName =
-  "mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100";
+const inputClassName = "ui-control";
 
 export function FiltrosLegajo({
   filtrosIniciales,
@@ -43,14 +43,12 @@ export function FiltrosLegajo({
   return (
     <form
       onSubmit={aplicarFiltros}
-      className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+      aria-label="Filtros de búsqueda de legajos"
+      className="ui-surface border-t-4 border-t-utn-500 p-5 sm:p-6"
     >
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
         <div className="md:col-span-2 xl:col-span-1">
-          <label
-            htmlFor="busqueda-legajo"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="busqueda-legajo" className="ui-label">
             DNI o apellido
           </label>
           <input
@@ -70,10 +68,7 @@ export function FiltrosLegajo({
         </div>
 
         <div>
-          <label
-            htmlFor="estado-legajo"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="estado-legajo" className="ui-label">
             Estado
           </label>
           <select
@@ -97,10 +92,7 @@ export function FiltrosLegajo({
         </div>
 
         <div>
-          <label
-            htmlFor="cohorte-legajo"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="cohorte-legajo" className="ui-label">
             Cohorte
           </label>
           <select
@@ -124,10 +116,7 @@ export function FiltrosLegajo({
         </div>
 
         <div>
-          <label
-            htmlFor="carrera-legajo"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="carrera-legajo" className="ui-label">
             Carrera
           </label>
           <select
@@ -151,10 +140,7 @@ export function FiltrosLegajo({
         </div>
 
         <div>
-          <label
-            htmlFor="beca-legajo"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="beca-legajo" className="ui-label">
             Tiene beca
           </label>
           <select
@@ -175,20 +161,11 @@ export function FiltrosLegajo({
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          onClick={limpiarFiltros}
-          className="rounded-md border border-slate-300 px-5 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
-        >
+      <div className="mt-6 flex flex-col-reverse gap-3 border-t border-neutral-200 pt-5 sm:flex-row sm:justify-end">
+        <Button type="button" onClick={limpiarFiltros} variant="secondary">
           Limpiar filtros
-        </button>
-        <button
-          type="submit"
-          className="rounded-md bg-blue-700 px-5 py-2.5 font-medium text-white hover:bg-blue-800"
-        >
-          Buscar
-        </button>
+        </Button>
+        <Button type="submit">Buscar</Button>
       </div>
     </form>
   );

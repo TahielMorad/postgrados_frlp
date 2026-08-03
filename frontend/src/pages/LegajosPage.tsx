@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router";
 import { ExportarLegajosButton } from "../features/legajos/components/ExportarLegajosButton";
 import { FiltrosLegajo } from "../features/legajos/components/FiltrosLegajo";
 import { TablaLegajos } from "../features/legajos/components/TablaLegajos";
@@ -15,6 +14,7 @@ import type {
   FiltrosLegajo as FiltrosLegajoValues,
 } from "../features/legajos/types/legajo";
 import { filtrarLegajos } from "../features/legajos/utils/filtrarLegajos";
+import { PageHeader, PageLayout } from "../shared/components/PageLayout";
 
 const filtrosIniciales: FiltrosLegajoValues = {
   busqueda: "",
@@ -40,60 +40,52 @@ export function LegajosPage() {
   );
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-12">
-      <div className="mx-auto max-w-7xl">
-        <Link to="/" className="font-medium text-blue-700 hover:underline">
-          ← Volver al inicio
-        </Link>
+    <PageLayout width="wide">
+      <PageHeader
+        backTo="/"
+        backLabel="Volver al inicio"
+        title="Búsqueda y listado de legajos"
+      />
 
-        <header className="mt-6">
-          <h1 className="text-3xl font-bold text-slate-900">
-            Búsqueda y listado de legajos
-          </h1>
+      <FiltrosLegajo
+        filtrosIniciales={filtrosIniciales}
+        estados={opcionesEstado}
+        cohortes={cohortesMock}
+        carreras={carrerasMock}
+        onAplicar={setFiltros}
+      />
 
+      <section aria-labelledby="resultados-title" className="mt-9">
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 id="resultados-title" className="ui-section-title">
+              Resultados
+            </h2>
+            <p aria-live="polite" className="mt-1 text-sm text-neutral-600">
+              {resultados.length} legajos encontrados
+            </p>
+          </div>
 
-        </header>
-
-
-        <div className="mt-8">
-          <FiltrosLegajo
-            filtrosIniciales={filtrosIniciales}
-            estados={opcionesEstado}
-            cohortes={cohortesMock}
-            carreras={carrerasMock}
-            onAplicar={setFiltros}
-          />
+          <ExportarLegajosButton legajos={resultados} />
         </div>
 
-        <section aria-labelledby="resultados-title" className="mt-8">
-          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2
-                id="resultados-title"
-                className="text-xl font-semibold text-slate-900"
-              >
-                Resultados
-              </h2>
-              <p aria-live="polite" className="mt-1 text-sm text-slate-600">
-                {resultados.length} legajos encontrados
-              </p>
-            </div>
+        <TablaLegajos legajos={resultados} />
+      </section>
 
-            <ExportarLegajosButton legajos={resultados} />
-          </div>
-
-          <TablaLegajos legajos={resultados} />
-        </section>
-
-        <details className="mt-8 rounded-xl border border-slate-200 bg-white shadow-sm">
-          <summary className="cursor-pointer px-6 py-5 text-lg font-semibold text-slate-900">
-            Consultar workflow de estados
-          </summary>
-          <div className="border-t border-slate-200 p-6 lg:p-8">
-            <WorkflowEstadosLegajo />
-          </div>
-        </details>
-      </div>
-    </main>
+      <details className="ui-surface group mt-9 overflow-hidden">
+        <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-display text-lg font-bold text-neutral-950 transition-colors marker:hidden hover:bg-utn-50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-utn-300 sm:px-6 sm:text-xl [&::-webkit-details-marker]:hidden">
+          Consultar workflow de estados
+          <span
+            aria-hidden="true"
+            className="text-2xl font-normal text-utn-700 transition-transform group-open:rotate-45"
+          >
+            +
+          </span>
+        </summary>
+        <div className="border-t border-neutral-200 p-5 sm:p-6 lg:p-8">
+          <WorkflowEstadosLegajo />
+        </div>
+      </details>
+    </PageLayout>
   );
 }

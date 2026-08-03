@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Button } from "../../../shared/components/Button";
+import { FeedbackMessage } from "../../../shared/components/FeedbackMessage";
 import type { LegajoListado } from "../types/legajo";
 import { exportarLegajosExcel } from "../utils/exportarLegajosExcel";
 
@@ -27,19 +29,24 @@ export function ExportarLegajosButton({ legajos }: ExportarLegajosButtonProps) {
 
   return (
     <div className="flex flex-col items-end gap-2">
-      <button
+      <Button
         type="button"
         onClick={exportar}
         disabled={exportando || legajos.length === 0}
-        className="rounded-md bg-emerald-700 px-5 py-2.5 font-medium text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+        loading={exportando}
+        variant="secondary"
       >
         {exportando ? "Generando Excel…" : "Exportar Excel"}
-      </button>
+      </Button>
 
       {error && (
-        <p role="alert" className="max-w-sm text-right text-sm text-red-700">
+        <FeedbackMessage
+          role="alert"
+          tone="error"
+          className="max-w-sm text-left"
+        >
           {error}
-        </p>
+        </FeedbackMessage>
       )}
     </div>
   );
