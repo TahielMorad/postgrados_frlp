@@ -5,7 +5,10 @@
 [![Cobertura objetivo](https://img.shields.io/badge/cobertura-≥70%25-green)](#)
 [![Semana actual](https://img.shields.io/badge/semana-1%20de%2032-blue)](#)
 
-> **Proyecto integrador** de la cátedra **Desarrollo de Software** — 3° año · Turno NOche · Ingeniería en Sistemas de Información · UTN FRLP · 2026
+> **Proyecto integrador** de la cátedra **Desarrollo de Software** — 3° año · Turno Noche · Ingeniería en Sistemas de Información · UTN FRLP · 2026
+
+📌 **[Guía de Entrega 2 (Frontend y Diseño Institucional)](docs/ENTREGA_2.md)**  
+📌 **[Guía Completa de Entrega 3 (Integración Back y Front)](docs/ENTREGA_3.md)**
 
 ---
 
