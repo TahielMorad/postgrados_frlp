@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
+import { useAuth } from "../auth/AuthContext";
 
 interface AppShellProps {
   children: ReactNode;
@@ -13,6 +14,14 @@ const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export function AppShell({ children }: AppShellProps) {
+  const { usuario, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-neutral-100 text-neutral-950">
       <a
@@ -47,15 +56,44 @@ export function AppShell({ children }: AppShellProps) {
             </span>
           </Link>
 
-          <span className="hidden border-l border-neutral-200 pl-5 text-right text-xs font-semibold tracking-[0.14em] text-neutral-500 uppercase md:block">
-            Facultad Regional
-            <br />
-            La Plata
-          </span>
+          <div className="flex items-center gap-4">
+            {usuario ? (
+              <div className="flex items-center gap-3 text-right">
+                <div className="hidden sm:block">
+                  <span className="block text-xs font-bold text-neutral-900">
+                    {usuario.nombre}
+                  </span>
+                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-utn-700">
+                    {usuario.rol}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded bg-neutral-100 px-3 py-1.5 text-xs font-bold text-neutral-700 hover:bg-neutral-200 transition-colors"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="rounded bg-utn-600 px-3.5 py-2 text-xs font-bold text-white uppercase tracking-wider hover:bg-utn-700 transition-colors"
+              >
+                Ingresar
+              </Link>
+            )}
+
+            <span className="hidden border-l border-neutral-200 pl-4 text-right text-xs font-semibold tracking-[0.14em] text-neutral-500 uppercase md:block">
+              Facultad Regional
+              <br />
+              La Plata
+            </span>
+          </div>
         </div>
 
         <nav aria-label="Navegación principal" className="bg-neutral-950">
-          <div className="mx-auto grid w-full max-w-[90rem] grid-cols-3 px-1 sm:flex sm:px-4 lg:px-6">
+          <div className="mx-auto flex w-full max-w-[90rem] px-1 sm:px-4 lg:px-6">
             <NavLink to="/" end className={navLinkClassName}>
               Inicio
             </NavLink>
@@ -69,7 +107,9 @@ export function AppShell({ children }: AppShellProps) {
         </nav>
       </header>
 
-      <div className="flex flex-1 flex-col">{children}</div>
+      <div id="main-content" className="flex flex-1 flex-col">
+        {children}
+      </div>
 
       <footer className="mt-auto border-t-4 border-utn-500 bg-neutral-950 text-neutral-300">
         <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-2 px-4 py-7 text-sm sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
