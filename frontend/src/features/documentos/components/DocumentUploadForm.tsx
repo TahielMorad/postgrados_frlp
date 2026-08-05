@@ -9,6 +9,7 @@ import {
 import type { DocumentoId, DocumentoRequerido } from "../types/documento";
 import { validarArchivoPdf } from "../utils/validarArchivo";
 import { DocumentUploadField } from "./DocumentUploadField";
+import { subirDocumentoApi } from "../../../shared/api/legajosApi";
 
 const BORRADOR_INSCRIPCION_KEY = "inscripcion-borrador";
 
@@ -121,7 +122,9 @@ export function DocumentUploadForm() {
     setDocumentacionValidada(false);
   }
 
-  function validarDocumentacion() {
+  const [enviando, setEnviando] = useState(false);
+
+  async function validarDocumentacion() {
     setEnvioIntentado(true);
     setDocumentacionValidada(false);
 
@@ -141,15 +144,28 @@ export function DocumentUploadForm() {
     }
 
     setErrores({});
-    setDocumentacionValidada(true);
+    setEnviando(true);
+
+    try {
+      const legajoId = localStorage.getItem("ultimo_legajo_id") || "temp-legajo-id";
+      for (const [docId, archivo] of Object.entries(archivos)) {
+        if (archivo) {
+          await subirDocumentoApi(legajoId, docId, archivo);
+        }
+      }
+      setDocumentacionValidada(true);
+    } catch (err) {
+      console.error("Error al subir documentos:", err);
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
     <section className="space-y-6">
       <FeedbackMessage tone="info">
-        Los archivos se mantienen temporalmente mientras esta página permanezca
-        abierta. La carga definitiva se realizará cuando el frontend se conecte
-        con el backend.
+        Los archivos seleccionados se validan localmente y se enviarán al
+        servidor al confirmar la revisión.
       </FeedbackMessage>
 
       <div className="space-y-4">
@@ -184,13 +200,12 @@ export function DocumentUploadForm() {
 
       {documentacionValidada && (
         <FeedbackMessage role="status" tone="success">
-          La documentación obligatoria está completa. El próximo paso será
-          revisar y confirmar la inscripción.
+          La documentación obligatoria fue enviada a revisión exitosamente.
         </FeedbackMessage>
       )}
 
       <div className="flex justify-end border-t border-neutral-200 pt-6">
-        <Button type="button" onClick={validarDocumentacion}>
+        <Button type="button" loading={enviando} onClick={validarDocumentacion}>
           Enviar a revisión
         </Button>
       </div>

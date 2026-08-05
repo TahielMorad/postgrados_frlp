@@ -9,7 +9,7 @@ export function NotFoundPage() {
     >
       <div className="ui-surface w-full border-t-4 border-t-utn-500 px-6 py-14 sm:px-12 sm:py-16">
         <p className="font-display text-7xl font-black tracking-tight text-utn-700 sm:text-8xl">
-          4004
+          404
         </p>
 
         <p className="mt-4 text-lg text-neutral-600">

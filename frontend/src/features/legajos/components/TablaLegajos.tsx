@@ -4,6 +4,7 @@ import { BadgeEstado } from "./BadgeEstado";
 
 interface TablaLegajosProps {
   legajos: LegajoListado[];
+  onCambiarEstado?: (legajo: LegajoListado) => void;
 }
 
 const formateadorFecha = new Intl.DateTimeFormat("es-AR", {
@@ -17,7 +18,7 @@ function formatearFecha(fecha: string): string {
   return formateadorFecha.format(new Date(`${fecha}T00:00:00Z`));
 }
 
-export function TablaLegajos({ legajos }: TablaLegajosProps) {
+export function TablaLegajos({ legajos, onCambiarEstado }: TablaLegajosProps) {
   if (legajos.length === 0) {
     return (
       <EmptyState role="status" title="No se encontraron resultados">
@@ -44,6 +45,7 @@ export function TablaLegajos({ legajos }: TablaLegajosProps) {
             <th scope="col">Carrera</th>
             <th scope="col">Beca</th>
             <th scope="col">Fecha inscripción</th>
+            {onCambiarEstado && <th scope="col">Acciones</th>}
           </tr>
         </thead>
         <tbody>
@@ -73,6 +75,17 @@ export function TablaLegajos({ legajos }: TablaLegajosProps) {
               <td className="whitespace-nowrap px-4 py-3.5 text-neutral-700">
                 {formatearFecha(legajo.fechaInscripcion)}
               </td>
+              {onCambiarEstado && (
+                <td className="whitespace-nowrap px-4 py-3.5">
+                  <button
+                    type="button"
+                    onClick={() => onCambiarEstado(legajo)}
+                    className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-utn-700 hover:text-utn-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-utn-500"
+                  >
+                    Gestionar estado
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

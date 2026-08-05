@@ -8,6 +8,7 @@ import {
   inscripcionSchema,
   type InscripcionFormData,
 } from "../schemas/inscripcionSchema";
+import { crearPreinscripcionApi } from "../../../shared/api/legajosApi";
 
 const BORRADOR_KEY = "inscripcion-borrador";
 const BORRADORES_POR_EMAIL_KEY = "inscripcion-borradores-por-email";
@@ -245,9 +246,16 @@ export function InscripcionForm() {
     });
   }
 
-  function onSubmit(data: InscripcionFormData) {
+  async function onSubmit(data: InscripcionFormData) {
     guardarBorradorLocal(data);
-
+    try {
+      const res = await crearPreinscripcionApi(data as unknown as Record<string, unknown>);
+      if (res?.id) {
+        localStorage.setItem("ultimo_legajo_id", res.id);
+      }
+    } catch (err) {
+      console.error("Error al enviar preinscripción:", err);
+    }
     navigate("/inscripcion/documentos");
   }
 
