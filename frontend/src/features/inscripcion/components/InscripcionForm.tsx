@@ -672,25 +672,51 @@ export function InscripcionForm() {
             </label>
 
             {solicitaBeca && (
-              <div className="mt-4">
-                <label htmlFor="porcentajeBeca" className="ui-label">
-                  Porcentaje solicitado *
-                </label>
-                <select
-                  id="porcentajeBeca"
-                  {...register("porcentajeBeca")}
-                  aria-invalid={Boolean(errors.porcentajeBeca)}
-                  className={inputClassName(Boolean(errors.porcentajeBeca))}
+              <div className="mt-4 space-y-5">
+                <div>
+                  <label htmlFor="porcentajeBeca" className="ui-label">
+                    Porcentaje solicitado *
+                  </label>
+                  <select
+                    id="porcentajeBeca"
+                    {...register("porcentajeBeca")}
+                    aria-invalid={Boolean(errors.porcentajeBeca)}
+                    className={inputClassName(Boolean(errors.porcentajeBeca))}
+                  >
+                    <option value="">Seleccioná una opción</option>
+                    <option value="30">30 %</option>
+                    <option value="100">100 %</option>
+                  </select>
+                  {errors.porcentajeBeca && (
+                    <p className={errorClassName}>
+                      {errors.porcentajeBeca.message}
+                    </p>
+                  )}
+                </div>
+
+                <section
+                  aria-labelledby="formulario-beca-title"
+                  className="rounded-lg border border-utn-200 bg-white p-4 shadow-xs sm:p-5"
                 >
-                  <option value="">Seleccioná una opción</option>
-                  <option value="30">30 %</option>
-                  <option value="100">100 %</option>
-                </select>
-                {errors.porcentajeBeca && (
-                  <p className={errorClassName}>
-                    {errors.porcentajeBeca.message}
+                  <h3
+                    id="formulario-beca-title"
+                    className="font-display text-lg font-bold text-neutral-950"
+                  >
+                    Formulario de solicitud de beca
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-neutral-600">
+                    Descargá el formulario, completalo y luego adjuntalo durante
+                    la carga de documentación.
                   </p>
-                )}
+
+                  <a
+                    href="/formularios/formulario-solicitud-beca.pdf"
+                    download
+                    className="ui-button ui-button-secondary ui-button-md mt-4 w-full sm:w-auto"
+                  >
+                    Descargar formulario de beca
+                  </a>
+                </section>
               </div>
             )}
           </div>
