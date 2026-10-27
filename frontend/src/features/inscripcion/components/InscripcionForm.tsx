@@ -249,7 +249,9 @@ export function InscripcionForm() {
   async function onSubmit(data: InscripcionFormData) {
     guardarBorradorLocal(data);
     try {
-      const res = await crearPreinscripcionApi(data as unknown as Record<string, unknown>);
+      const res = await crearPreinscripcionApi(
+        data as unknown as Record<string, unknown>,
+      );
       if (res?.id) {
         localStorage.setItem("ultimo_legajo_id", res.id);
       }
