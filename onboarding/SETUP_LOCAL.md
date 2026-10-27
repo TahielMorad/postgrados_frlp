@@ -2,7 +2,7 @@
 
 Esta guía te lleva desde cero hasta tener el sistema corriendo localmente. **Seguí cada paso en orden.** Si algo falla, hay una sección de Troubleshooting al final.
 
-> **Antes de empezar:** Esta guía asume el **stack principal (FastAPI + Python)**. Si tu equipo eligió el stack alternativo (NestJS + TypeScript), los pasos del sistema son iguales pero los comandos de backend difieren — están indicados en cada sección con el bloque `── Si elegiste NestJS ──`.
+> **Stack del proyecto:** backend en `backend/` con **FastAPI + Python 3.12** (dependencias con **uv**, SQLAlchemy + Alembic) y frontend en `frontend/` con **React 19 + TypeScript + Vite** (dependencias con **pnpm**). Base de datos **PostgreSQL 18.6**.
 
 ---
 
@@ -16,10 +16,10 @@ docker --version       # Docker 24.x o superior
 docker compose version # Compose 2.x (incluido en Docker Desktop)
 ```
 
-Eso es todo. **Python y Node.js corren dentro de Docker**, no necesitás instalarlos en tu máquina para el flujo principal. Los únicos casos en que los necesitás localmente son:
+Eso es todo. **Python y Node.js corren dentro de Docker**, no necesitás instalarlos en tu máquina para el flujo principal. Si querés trabajar fuera de Docker (linter en el editor, correr el backend o el front a mano), instalá:
 
-- Si querés correr los tests fuera de Docker (más rápido para TDD)
-- Si querés usar el linter integrado en el editor
+- [uv](https://docs.astral.sh/uv/) → en `backend/`: `uv sync` y `uv run uvicorn main:app --reload`
+- [pnpm](https://pnpm.io/) → en `frontend/`: `pnpm install` y `pnpm dev`
 
 **Instaladores:**
 - Git: https://git-scm.com
@@ -42,7 +42,10 @@ cd postgrado-[NOMBRE-EQUIPO]
 
 # Verificar que estás en la rama principal
 git branch
-# Deberías ver: * main
+# Deberías ver: * dev  (o * main, según la rama por defecto del clon)
+
+# Para trabajar, pasate a la rama de integración
+git checkout dev
 ```
 
 ---
@@ -72,13 +75,12 @@ El `.env` nunca se commitea a Git (está en `.gitignore`). Si alguien del equipo
 docker compose up -d
 ```
 
-Este comando descarga las imágenes y levanta cuatro servicios:
+Este comando descarga las imágenes y levanta tres servicios:
 
 ```
-postgrado-db        → PostgreSQL 16 (base de datos)
-postgrado-backend   → FastAPI en Python  (o NestJS, según tu stack)
-postgrado-frontend  → React 19 + Vite
-postgrado-mailhog   → Servidor de email falso para desarrollo
+postgres   → PostgreSQL 18.6 (imagen oficial postgres:18.6)
+backend    → FastAPI + Python 3.12 (puerto 8000)
+frontend   → React 19 + Vite (puerto 5173)
 ```
 
 La primera vez puede tardar 3–5 minutos según tu conexión. Las siguientes veces son casi instantáneas porque las imágenes quedan en caché.
@@ -89,72 +91,42 @@ La primera vez puede tardar 3–5 minutos según tu conexión. Las siguientes ve
 docker compose ps
 ```
 
-Deberías ver:
-
-```
-NAME              STATUS          PORTS
-postgrado-db          Up (healthy)    0.0.0.0:5432->5432/tcp
-postgrado-backend     Up              0.0.0.0:8000->8000/tcp
-postgrado-frontend    Up              0.0.0.0:3000->3000/tcp
-postgrado-mailhog     Up              0.0.0.0:1025->1025/tcp, 0.0.0.0:8025->8025/tcp
-```
+Deberías ver los servicios `postgres` (healthy), `backend` (`8000->8000`) y `frontend` (`5173->5173`). El puerto de Postgres en el host es `5432` salvo que definas `DB_PORT` en el `.env`.
 
 > El campo **STATUS** debe decir **Up**. Si dice **Restarting** o **Exit**, algo salió mal → ir a Troubleshooting.
 
 ---
 
-## Paso 4: Aplicar Migraciones de Base de Datos
+## Paso 4: Migraciones y Datos de Prueba
 
-Las migraciones crean las tablas y la estructura de la base de datos. Deben correrse una vez al clonar el repo, y cada vez que aparezca una migración nueva en `develop`.
-
-### Stack principal — FastAPI + Alembic
+**No tenés que hacer nada a mano:** al arrancar, el contenedor `backend` ejecuta `init_db.py`, que aplica las migraciones de Alembic y carga el seed automáticamente. Cuando aparezca una migración nueva en `dev`, alcanza con reiniciar el backend (`docker compose restart backend`) o correrla explícitamente:
 
 ```bash
 # Aplicar todas las migraciones pendientes
-docker exec postgrado-backend alembic upgrade head
-
-# Cargar datos de prueba (50 aspirantes ficticios + usuarios de sistema)
-docker exec postgrado-backend python -m scripts.seed
+docker compose exec backend alembic upgrade head
 ```
 
 **¿Cómo sé qué versión está aplicada?**
 
 ```bash
-docker exec postgrado-backend alembic current
+docker compose exec backend alembic current
 # Muestra el hash de la migración activa, por ej: a1b2c3d4 (head)
 ```
 
 **¿Cómo ver el historial de migraciones?**
 
 ```bash
-docker exec postgrado-backend alembic history --verbose
+docker compose exec backend alembic history --verbose
 ```
 
----
-
-### Stack alternativo — NestJS + Prisma
+**Verificar que las tablas existen:**
 
 ```bash
-# Aplicar el schema de Prisma a la base de datos
-docker exec postgrado-backend npx prisma migrate deploy
-
-# O en desarrollo, que también genera el cliente:
-docker exec postgrado-backend npx prisma migrate dev
-
-# Cargar datos de prueba
-docker exec postgrado-backend npx ts-node prisma/seed.ts
-```
-
----
-
-**Verificar que las tablas existen (igual para ambos stacks):**
-
-```bash
-docker exec -it postgrado-db psql -U postgrado_user -d fenix_dev
+docker compose exec postgres psql -U postgrado_user -d postgrado_dev
 
 # Dentro del prompt psql:
 \dt
-# Deberías ver: legajos, documentos, cohortes, seminarios, auditoria_legajos, etc.
+# Deberías ver las tablas del sistema (cohortes, legajos, etc.)
 
 # Para salir:
 \q
@@ -168,14 +140,13 @@ Abrí estos URLs en tu navegador:
 
 | URL | Qué deberías ver |
 |-----|-----------------|
-| `http://localhost:3000` | Pantalla de login del sistema Fenix |
-| `http://localhost:3000/inscripcion` | Formulario público (sin login requerido) |
-| `http://localhost:8000/docs` | Swagger UI — **stack FastAPI** (generado automáticamente) |
-| `http://localhost:8000/api` | Swagger UI — **stack NestJS** |
-| `http://localhost:8000/api/v1/health` | Responde `{"status": "ok", "stack": "fastapi"}` |
-| `http://localhost:8025` | MailHog: todos los emails del sistema aparecen acá |
+| `http://localhost:5173` | Frontend (React + Vite) |
+| `http://localhost:5173/cohortes` | Pantalla de cohortes (consume `GET /api/v1/cohortes`) |
+| `http://localhost:8000/health` | Liveness del backend: `{"status":"ok"}` |
+| `http://localhost:8000/api/v1/health` | Health con chequeo de la base de datos |
+| `http://localhost:8000/api/v1/docs` | Swagger UI (generado automáticamente por FastAPI) |
 
-> **Tip:** Con FastAPI, el Swagger en `/docs` es la documentación viva de tu API. Podés probar los endpoints directamente desde ahí durante el desarrollo.
+> **Tip:** El Swagger en `/api/v1/docs` es la documentación viva de tu API. Podés probar los endpoints directamente desde ahí durante el desarrollo. El frontend llama a `/api/*` y el proxy de Vite lo reenvía al backend.
 
 **Credenciales de prueba (cargadas por el seed):**
 
@@ -189,7 +160,7 @@ Abrí estos URLs en tu navegador:
 
 ## Paso 6: Configurar el Editor — VS Code
 
-### Extensiones para el stack principal (FastAPI + Python)
+### Extensiones para el backend (FastAPI + Python)
 
 ```bash
 code --install-extension ms-python.python           # Python oficial de Microsoft
@@ -200,17 +171,14 @@ code --install-extension bradlc.vscode-tailwindcss   # Autocompletado de clases 
 code --install-extension ms-azuretools.vscode-docker # Docker integrado
 ```
 
-### Extensiones para el stack alternativo (NestJS + TypeScript)
+### Extensiones para el frontend (React + TypeScript)
 
 ```bash
 code --install-extension dbaeumer.vscode-eslint      # ESLint
 code --install-extension esbenp.prettier-vscode      # Prettier
-code --install-extension prisma.prisma               # Syntax y format de schema.prisma
-code --install-extension bradlc.vscode-tailwindcss
-code --install-extension ms-azuretools.vscode-docker
 ```
 
-### Extensiones comunes a ambos stacks
+### Extensiones comunes
 
 ```bash
 code --install-extension eamodio.gitlens             # Historial de Git en el editor
@@ -244,88 +212,41 @@ docker compose down
 
 ---
 
-### Tests y calidad de código — Stack FastAPI (principal)
+### Dependencias y calidad de código
 
 ```bash
-# Correr todos los tests
-docker exec fenix-backend pytest
+# ── Backend (uv, en backend/) ────────────────────────────────
+uv sync                                  # instala según pyproject.toml + uv.lock
+uv add <paquete>                         # agrega una dependencia (commiteá pyproject.toml y uv.lock)
+uv run uvicorn main:app --reload         # correr el backend fuera de Docker
 
-# Con reporte de cobertura detallado
-docker exec fenix-backend pytest --cov=src --cov-report=term-missing
+# ── Frontend (pnpm, en frontend/) ────────────────────────────
+pnpm install
+pnpm dev                                 # dev server en http://localhost:5173
+pnpm lint
+pnpm build
 
-# Solo tests de un módulo (más rápido durante desarrollo)
-docker exec postgrado-backend pytest tests/inscripcion/
-
-# Solo tests de dominio (los más rápidos, sin BD)
-docker exec postgrado-backend pytest tests/inscripcion/test_domain.py
-
-# Linter (Ruff — chequea estilo y errores comunes)
-docker exec postgrado-backend ruff check src/
-
-# Formatter (Ruff — aplica formato automáticamente)
-docker exec postgrado-backend ruff format src/
-
-# Type checking (opcional pero recomendado)
-docker exec postgrado-backend mypy src/
+# ── Tests (a futuro: todavía no hay suite en el scaffold) ────
+uv run pytest
+pnpm test
 ```
 
 ---
 
-### Tests y calidad de código — Stack NestJS (alternativo)
+### Migraciones de base de datos (Alembic)
 
 ```bash
-# Correr todos los tests
-docker exec postgrado-backend npm test
-
-# Con cobertura
-docker exec postgrado-backend npm run test:cov
-
-# Solo tests de un módulo
-docker exec postgrado-backend npm test -- --testPathPattern=inscripcion
-
-# Linter
-docker exec postgrado-backend npm run lint
-
-# Formatter
-docker exec postgrado-backend npm run format
-
-# Verificar tipos TypeScript sin compilar
-docker exec postgrado-backend npm run typecheck
-```
-
----
-
-### Migraciones de base de datos
-
-```bash
-# ── FastAPI / Alembic ────────────────────────────────────────
-
 # Crear una nueva migración a partir de cambios en los modelos SQLAlchemy
-docker exec postgrado-backend alembic revision --autogenerate -m "agrega columna beca a legajos"
+docker compose exec backend alembic revision --autogenerate -m "agrega columna beca a legajos"
 
 # Aplicar migraciones pendientes
-docker exec postgrado-backend alembic upgrade head
+docker compose exec backend alembic upgrade head
 
 # Ver migración actual
-docker exec postgrado-backend alembic current
+docker compose exec backend alembic current
 
 # Revertir la última migración (con cuidado)
-docker exec postgrado-backend alembic downgrade -1
-
-
-# ── NestJS / Prisma ──────────────────────────────────────────
-
-# Crear migración después de editar schema.prisma
-docker exec postgrado-backend npx prisma migrate dev --name agrega-columna-beca
-
-# Aplicar migraciones en CI / producción
-docker exec postgrado-backend npx prisma migrate deploy
-
-# Ver el estado de las migraciones
-docker exec postgrado-backend npx prisma migrate status
-
-# Regenerar el cliente Prisma (luego de editar schema.prisma)
-docker exec postgrado-backend npx prisma generate
+docker compose exec backend alembic downgrade -1
 ```
 
 ---
@@ -334,7 +255,7 @@ docker exec postgrado-backend npx prisma generate
 
 ```bash
 # Conectarse con psql
-docker exec -it postgrado-db psql -U postgrado_user -d postgrado_dev
+docker compose exec postgres psql -U postgrado_user -d postgrado_dev
 
 # Comandos útiles dentro de psql:
 #   \dt             → listar tablas
@@ -343,7 +264,7 @@ docker exec -it postgrado-db psql -U postgrado_user -d postgrado_dev
 #   \q              → salir
 
 # Consulta rápida sin entrar al prompt interactivo:
-docker exec postgrado-db psql -U postgrado_user -d postgrado_dev -c "SELECT id, dni, estado FROM legajos LIMIT 5;"
+docker compose exec postgres psql -U postgrado_user -d postgrado_dev -c "SELECT id, dni, estado FROM legajos LIMIT 5;"
 ```
 
 ---
@@ -352,7 +273,7 @@ docker exec postgrado-db psql -U postgrado_user -d postgrado_dev -c "SELECT id, 
 
 ### ❌ `docker compose up` falla con "port is already in use"
 
-**Error:** `bind: address already in use` — algún puerto (5432, 3000, 8000) está ocupado.
+**Error:** `bind: address already in use` — algún puerto (5432, 5173, 8000) está ocupado.
 
 ```bash
 # Ver qué proceso ocupa el puerto (Mac / Linux)
@@ -363,20 +284,20 @@ lsof -i :8000
 netstat -ano | findstr :5432
 
 # Solución A: detener el proceso que ocupa el puerto
-# Solución B: cambiar el puerto en docker-compose.yml
-# Ejemplo: "5433:5432" expone el 5432 interno en el 5433 del host
+# Solución B (Postgres): definir otro puerto de host en .env
+# Ejemplo: DB_PORT=5433
 ```
 
 ---
 
-### ❌ `postgrado-backend` en estado "Restarting"
+### ❌ El servicio `backend` en estado "Exited"
 
 ```bash
 # Ver el error exacto
 docker compose logs backend --tail=50
 
 # Causas frecuentes:
-# 1. La DB no terminó de iniciar → esperar 30 seg y correr: docker compose restart backend
+# 1. Fallaron las migraciones (init_db aborta con exit 1) → revisar el error y correr: docker compose up -d backend
 # 2. Error de sintaxis en el código → el log muestra el traceback completo
 # 3. Variable de entorno faltante → revisar que .env existe y tiene DATABASE_URL
 # 4. Puerto 8000 ocupado por otra app → ver troubleshooting anterior
@@ -389,29 +310,17 @@ docker compose logs backend --tail=50
 **Causa:** La base de datos no terminó de iniciar (el healthcheck de Docker puede tardar).
 
 ```bash
-# Verificar que postgrado-db está "healthy" (no solo "Up")
+# Verificar que el servicio postgres está "healthy" (no solo "Up")
 docker compose ps
 # Si dice "starting" esperar 30 segundos
 
 # Intentar nuevamente
-docker exec postgrado-backend alembic upgrade head
+docker compose exec backend alembic upgrade head
 
-# Si sigue fallando, verificar DATABASE_URL en .env:
-# Debe ser: postgresql+asyncpg://postgrado_user:postgrado_dev_password@db:5432/postgrado_dev
-# IMPORTANTE: el host es "db" (nombre del servicio en docker-compose), no "localhost"
-```
-
----
-
-### ❌ `npx prisma migrate dev` falla con "P1001: Can't reach database"
-
-Misma causa que el punto anterior. El host en `DATABASE_URL` debe ser `db`, no `localhost`.
-
-```bash
-# Verificar en .env:
-# DATABASE_URL="postgresql://postgrado_user:postgrado_dev_password@db:5432/postgrado_dev"
-#                                                           ^^
-#                                               Nombre del servicio Docker, no localhost
+# Dentro de Docker el compose arma DATABASE_URL solo (host "postgres", puerto 5432):
+# la DATABASE_URL del .env NO se usa en los contenedores.
+# Si corrés el backend FUERA de Docker, la DATABASE_URL del .env debe usar
+# host "localhost" y el puerto de DB_PORT. Ej: postgresql://postgrado_user:<password>@localhost:5432/postgrado_dev
 ```
 
 ---
@@ -419,36 +328,28 @@ Misma causa que el punto anterior. El host en `DATABASE_URL` debe ser `db`, no `
 ### ❌ La app levanta pero el frontend no puede conectar al backend (CORS / 404)
 
 ```bash
-# Verificar que VITE_API_URL apunta al backend correcto
-grep VITE_API_URL .env
-# Debe decir: VITE_API_URL=http://localhost:8000/api/v1
-
 # Verificar que el backend responde
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/health
 # Debe responder: {"status":"ok"}
 
-# Si cambiaste VITE_API_URL, reiniciar el frontend para que tome el nuevo valor
+# El frontend llama a /api/* y el proxy de Vite lo reenvía al backend.
+# Si tocaste vite.config.ts, reiniciar el frontend
 docker compose restart frontend
 ```
 
 ---
 
-### ❌ `pytest` falla con "ModuleNotFoundError"
+### ❌ `ModuleNotFoundError` en el backend
 
-**Causa:** El módulo no está instalado en el contenedor, o hay un problema con el `PYTHONPATH`.
+**Causa:** La dependencia no está en `pyproject.toml`/`uv.lock`, o la imagen quedó desactualizada.
 
 ```bash
-# Reinstalar dependencias dentro del contenedor
+# Agregar la dependencia con uv (en backend/) y commitear pyproject.toml + uv.lock
+uv add <paquete>
+
+# Reconstruir la imagen del backend para incluirla
 docker compose build backend --no-cache
 docker compose up -d backend
-
-# Verificar que el módulo existe
-docker exec postgrado-backend pip list | grep fastapi
-
-# Si agregaste una dependencia nueva a requirements.txt:
-# El contenedor debe reconstruirse para incluirla
-docker compose build backend
-docker compose up -d
 ```
 
 ---
@@ -475,19 +376,12 @@ git reset --hard
 docker compose down -v      # -v elimina los volúmenes (base de datos incluida)
 docker compose up -d
 
-# Volver a aplicar migraciones y seed
-# Stack FastAPI:
-docker exec postgrado-backend alembic upgrade head
-docker exec postgrado-backend python -m scripts.seed
-
-# Stack NestJS:
-docker exec postgrado-backend npx prisma migrate deploy
-docker exec postgrado-backend npx ts-node prisma/seed.ts
+# Migraciones y seed se vuelven a aplicar solos (init_db.py al arrancar el backend)
 ```
 
 ---
 
-### ❌ El Swagger de FastAPI (`/docs`) no muestra mis endpoints nuevos
+### ❌ El Swagger de FastAPI (`/api/v1/docs`) no muestra mis endpoints nuevos
 
 **Causa:** FastAPI genera el Swagger en tiempo de ejecución, pero si el servidor tiene un error de importación, algunos routers no se cargan.
 
@@ -508,29 +402,21 @@ Antes de dar por terminado el kickoff, **todos los integrantes** del equipo debe
 ```
 AMBIENTE
 [ ] git clone del repositorio del equipo funciona
-[ ] docker compose up -d levanta los 4 servicios sin errores
+[ ] docker compose up -d levanta los 3 servicios (postgres, backend, frontend) sin errores
 [ ] docker compose ps muestra todos los servicios en estado "Up"
 
 APLICACIÓN
-[ ] http://localhost:3000 muestra la pantalla de login
-[ ] http://localhost:3000/inscripcion muestra el formulario público
-[ ] http://localhost:8000/docs (FastAPI) o /api (NestJS) muestra el Swagger
-[ ] http://localhost:8025 muestra MailHog con la bandeja vacía
-[ ] Login con admin@postgrado.test / Admin1234! funciona sin errores de consola
+[ ] http://localhost:8000/health responde {"status":"ok"}
+[ ] http://localhost:8000/api/v1/health responde OK (DB conectada)
+[ ] http://localhost:8000/api/v1/docs muestra el Swagger
+[ ] http://localhost:5173/cohortes lista las cohortes sin errores de consola
 
 BASE DE DATOS
-[ ] Las migraciones corrieron sin errores
+[ ] init_db.py corrió sin errores (ver docker compose logs backend)
 [ ] psql \dt muestra las tablas del sistema
-[ ] Los datos del seed están cargados (hay legajos en la pantalla del coordinador)
-
-TESTS
-[ ] Stack FastAPI: docker exec postgrado-backend pytest → todos pasan
-[ ] Stack NestJS:  docker exec postgrado-backend npm test → todos pasan
-[ ] El pipeline de CI está en verde en GitHub
 
 GIT
-[ ] Podés crear una rama, hacer un commit y abrir un Pull Request en GitHub
-[ ] El PR dispara el pipeline de CI automáticamente
+[ ] Podés crear una rama feat/T{N}-... desde dev, commitear (Conventional Commits) y abrir un PR contra dev
 ```
 
 > Si algún integrante no puede completar este checklist, **el equipo resuelve el bloqueo antes de avanzar al Sprint 1.** Un ambiente roto en una sola máquina es un riesgo real para la integración continua.

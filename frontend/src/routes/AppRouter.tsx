@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router";
+import { CohortesPage } from "../pages/CohortesPage";
 import { DocumentosPage } from "../pages/DocumentosPage";
 import { HomePage } from "../pages/HomePage";
 import { InscripcionPage } from "../pages/InscripcionPage";
@@ -11,6 +12,7 @@ export function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/cohortes" element={<CohortesPage />} />
       <Route path="/inscripcion" element={<InscripcionPage />} />
       <Route path="/inscripcion/documentos" element={<DocumentosPage />} />
       <Route path="/login" element={<LoginPage />} />

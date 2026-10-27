@@ -147,7 +147,8 @@ export function DocumentUploadForm() {
     setEnviando(true);
 
     try {
-      const legajoId = localStorage.getItem("ultimo_legajo_id") || "temp-legajo-id";
+      const legajoId =
+        localStorage.getItem("ultimo_legajo_id") || "temp-legajo-id";
       for (const [docId, archivo] of Object.entries(archivos)) {
         if (archivo) {
           await subirDocumentoApi(legajoId, docId, archivo);

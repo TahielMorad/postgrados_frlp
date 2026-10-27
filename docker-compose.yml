@@ -1,90 +1,69 @@
-# docker-compose.yml — Ambiente de desarrollo Fenix Posgrado
-# Ejecutar: docker-compose up -d
-# Detener:  docker-compose down
-# Ver logs: docker-compose logs -f [servicio]
-
-version: '3.9'
+# docker-compose.yml — Ambiente de desarrollo · Sistema de Posgrado UTN FRLP
+# Levantar: docker compose up        (agregar -d para segundo plano)
+# Detener:  docker compose down      (agregar -v para borrar la base de datos)
+# Logs:     docker compose logs -f [postgres|backend|frontend]
 
 services:
   # ──────────────────────────────────────────
-  # BASE DE DATOS PostgreSQL
+  # BASE DE DATOS — PostgreSQL 18.6
   # ──────────────────────────────────────────
-  db:
-    image: postgres:15-alpine
-    container_name: postgrado-db
-    restart: unless-stopped
+  postgres:
+    image: postgres:18.6
     environment:
       POSTGRES_USER: ${DB_USER:-postgrado_user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgrado_dev_password}
       POSTGRES_DB: ${DB_NAME:-postgrado_dev}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./src/core/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # PostgreSQL 18+ guarda los datos en /var/lib/postgresql/<versión>/docker
+      - pgdata:/var/lib/postgresql
+      - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgrado_user} -d ${DB_NAME:-postgrado_dev}"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   # ──────────────────────────────────────────
-  # BACKEND API (FastAPI + Python 3.12)
+  # BACKEND — FastAPI + uv (Python 3.12)
   # ──────────────────────────────────────────
   backend:
     build:
-      context: ./src/core
+      context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: postgrado-backend
-    restart: unless-stopped
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${DB_USER:-postgrado_user}:${DB_PASSWORD:-postgrado_dev_password}@db:5432/${DB_NAME:-postgrado_dev}
+      DATABASE_URL: postgresql://${DB_USER:-postgrado_user}:${DB_PASSWORD:-postgrado_dev_password}@postgres:5432/${DB_NAME:-postgrado_dev}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
       STORAGE_PATH: /var/postgrado-storage
-      SMTP_HOST: ${SMTP_HOST:-mailhog}
-      SMTP_PORT: ${SMTP_PORT:-1025}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     volumes:
-      - ./src/core:/app
-      - postgrado-storage:/var/postgrado-storage
-    command: sh -c "python init_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+      - ./backend:/app
+      - storage:/var/postgrado-storage
 
   # ──────────────────────────────────────────
-  # FRONTEND (React 19 + TypeScript + Vite)
+  # FRONTEND — React 19 + Vite + pnpm
   # ──────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: postgrado-frontend
-    restart: unless-stopped
     depends_on:
       - backend
     environment:
-      VITE_API_URL: http://localhost:8000/api/v1
+      # El proxy de Vite reenvía /api/* al backend por la red interna de Compose
+      VITE_PROXY_TARGET: http://backend:8000
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-5173}:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
 
-  # ──────────────────────────────────────────
-  # MAILHOG — Servidor de email falso para desarrollo
-  # Ver emails en: http://localhost:8025
-  # ──────────────────────────────────────────
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: postgrado-mailhog
-    ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # UI web para ver emails
-
 volumes:
   pgdata:
-    name: postgrado-pgdata
-  postgrado-storage:
-    name: postgrado-storage
+  storage:

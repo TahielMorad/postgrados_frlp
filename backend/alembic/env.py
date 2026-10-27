@@ -6,19 +6,18 @@ from sqlalchemy import engine_from_config, pool
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+from config import settings
 from database import Base
 import models  # noqa: F401
 
 config = context.config
 
 if config.config_file_name:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
-db_url = os.getenv(
-    "DATABASE_URL",
-    config.get_main_option("sqlalchemy.url")
-)
-config.set_main_option("sqlalchemy.url", db_url)
+# Misma URL que la app (env vars o .env). configparser interpreta "%",
+# así que se escapa por si la contraseña lo incluye.
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
 target_metadata = Base.metadata
 

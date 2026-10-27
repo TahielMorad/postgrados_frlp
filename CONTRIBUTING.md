@@ -4,47 +4,50 @@ Leé este documento antes de hacer tu primer commit. Estas convenciones existen 
 
 ---
 
-## 1. Estrategia de Ramas (GitFlow simplificado)
+## 1. Estrategia de Ramas (workflow obligatorio de la cátedra)
 
 ```
-main          ← Solo versiones estables. Tags de release (v0.5, v1.0). NUNCA push directo.
-  └── develop ← Integración continua. Aquí mergean los features. NUNCA push directo.
-        └── feature/US-CORE-001-formulario-inscripcion  ← Tu rama de trabajo
-        └── feature/US-B-002-planilla-asistencia
-        └── fix/bug-descripcion-del-bug
-        └── docs/actualizar-asr
+main            ← Solo releases taggeados (vX.Y.Z) + CHANGELOG actualizado. NUNCA commits directos
+  │               ni merges de feat/fix. Solo recibe `dev` en un release.
+  └── dev       ← Rama de integración (nace de `main`). Acá vuelven todas las ramas de trabajo.
+        └── feat/T7-us-core-001-inscripcion   ← Tu rama de trabajo (nace de `dev`)
+        └── feat/T12-planilla-asistencia
+        └── fix/validacion-dni-duplicado
 ```
 
-**Regla de oro: Si no es un Pull Request, no existe.**
+**Regla de oro: Si no es un Pull Request contra `dev`, no existe.**
 
 ---
 
 ## 2. Nomenclatura de Ramas
 
+Las ramas de trabajo nacen de `dev` y vuelven a `dev`:
+
 ```
-feature/US-[MOD]-[NNN]-[descripcion-corta]
-fix/[descripcion-del-bug]
-docs/[descripcion]
-refactor/[descripcion]
-test/[descripcion]
+feat/T{N}-descripcion-corta     ← N = número de tarea del plan
+fix/descripcion-corta
 ```
 
+El ID de la historia de usuario puede ir dentro de la descripción si suma contexto.
+
 **Ejemplos válidos:**
-- `feature/US-CORE-001-formulario-inscripcion`
-- `feature/US-B-002-planilla-asistencia`
+- `feat/T1-scaffold-estructura`
+- `feat/T7-us-core-001-inscripcion`
 - `fix/validacion-dni-duplicado`
-- `docs/actualizar-swagger-legajos`
 
 **Ejemplos inválidos:**
 - `mi-rama` ← sin contexto
-- `feature/arreglos` ← sin ID de historia
-- `WIP` ← nunca mergear Work In Progress
+- `feature/US-CORE-001-...` ← formato viejo, usar `feat/T{N}-...`
+- `develop` ← la rama de integración se llama `dev`
+- `wip` ← nunca mergear Work In Progress
 
 ---
 
 ## 3. Convención de Commits (Conventional Commits)
 
 Formato: `tipo(alcance): descripción en presente, sin mayúscula inicial, sin punto final`
+
+**El 100% de los commits** sigue Conventional Commits. Nada de `wip`, `cambios`, `fix varios`.
 
 ```
 feat(core): agrega validación de DNI en formulario de inscripción
@@ -64,8 +67,8 @@ chore(ci): configura pipeline de GitHub Actions para linting
 | `docs` | Cambios en documentación |
 | `test` | Agrega o modifica tests |
 | `refactor` | Refactorización sin cambio de comportamiento |
+| `docker` | Cambios en Dockerfiles o `docker-compose.yml` |
 | `chore` | Tareas de mantenimiento (CI, dependencias) |
-| `style` | Formato (linting, espacios) sin cambio de lógica |
 
 **Referencia al requisito:** Si el commit implementa un requisito del SRS, incluirlo:
 ```
@@ -100,8 +103,8 @@ Cierra #[número de issue en GitHub] — US-CORE-001
 - [Lista de cambios relevantes]
 
 ## Cómo probarlo
-1. Levantar el ambiente: `docker-compose up -d`
-2. Ir a `http://localhost:3000/inscripcion`
+1. Levantar el ambiente: `docker compose up -d`
+2. Ir a `http://localhost:5173/inscripcion`
 3. Completar el formulario con datos válidos
 4. Verificar que el legajo aparece en el dashboard del coordinador
 
@@ -109,11 +112,11 @@ Cierra #[número de issue en GitHub] — US-CORE-001
 [Imagen o GIF del antes/después]
 
 ## Checklist del DoD
-- [ ] Tests pasando (cobertura ≥70% en lógica nueva)
+- [ ] Tests pasando, cuando existan (`uv run pytest` / `pnpm test`, a futuro)
 - [ ] Linter sin errores
 - [ ] Swagger actualizado (si hay endpoints nuevos)
 - [ ] Probado en la máquina de otro integrante
-- [ ] CHANGELOG.md actualizado
+- [ ] CHANGELOG.md actualizado en `[Unreleased]`
 ```
 
 ### Code Review: qué revisar
@@ -133,32 +136,45 @@ NO es responsabilidad del reviewer:
 ## 5. Workflow Paso a Paso
 
 ```bash
-# 1. Siempre trabajar desde develop actualizado
-git checkout develop
-git pull origin develop
+# 1. Siempre trabajar desde dev actualizado
+git checkout dev
+git pull origin dev
 
-# 2. Crear rama para la historia
-git checkout -b feature/US-CORE-001-formulario-inscripcion
+# 2. Crear rama para la tarea
+git checkout -b feat/T7-us-core-001-inscripcion
 
 # 3. Desarrollar, commitear frecuentemente (no solo al final)
 git add .
 git commit -m "feat(core): agrega campos básicos del formulario de inscripción"
 git commit -m "feat(core): agrega validación de DNI y email"
-git commit -m "test(core): agrega tests de validación del formulario"
 
-# 4. Antes de abrir el PR: sincronizar con develop
-git fetch origin develop
-git rebase origin/develop
+# 4. Antes de abrir el PR: sincronizar con dev
+git fetch origin dev
+git rebase origin/dev
 # Si hay conflictos: resolverlos, luego git rebase --continue
 
 # 5. Push y abrir PR en GitHub
-git push origin feature/US-CORE-001-formulario-inscripcion
-# Abrir PR en GitHub contra la rama develop
+git push origin feat/T7-us-core-001-inscripcion
+# Abrir PR en GitHub contra la rama dev (NUNCA contra main)
 
 # 6. Después del merge: limpiar rama local
-git checkout develop
-git pull origin develop
-git branch -d feature/US-CORE-001-formulario-inscripcion
+git checkout dev
+git pull origin dev
+git branch -d feat/T7-us-core-001-inscripcion
+```
+
+### Releases (solo `dev` → `main`)
+
+- Versionado **SemVer** en tags: `v0.y.z` mientras el sistema sea inestable.
+- `CHANGELOG.md` en formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/): lo nuevo se acumula en `[Unreleased]` y en el release se mueve a la sección de la versión.
+
+```bash
+git checkout main
+git merge --no-ff dev
+# Actualizar CHANGELOG.md: [Unreleased] → [X.Y.Z] - AAAA-MM-DD, y commitear
+git commit -am "docs: actualiza changelog para vX.Y.Z"
+git tag -a vX.Y.Z -m "release: vX.Y.Z"
+git push origin main --tags
 ```
 
 ---
@@ -174,7 +190,7 @@ Cuando agregues una variable nueva:
 
 ```bash
 # .env.example
-DATABASE_URL=postgresql://user:password@localhost:5432/postgrado_dev
+DATABASE_URL=postgresql://postgrado_user:password@postgres:5432/postgrado_dev
 JWT_SECRET=cambiar-en-produccion-por-secreto-seguro-32chars-min
 SMTP_HOST=smtp.example.com
 SMTP_PORT=587
@@ -186,26 +202,31 @@ STORAGE_PATH=/var/postgrado-storage  # Ruta donde se almacenan los PDFs
 ## 7. Comandos Útiles
 
 ```bash
-# Levantar ambiente completo
-docker-compose up -d
+# Levantar ambiente completo (postgres + backend + frontend)
+docker compose up -d
 
 # Ver logs del backend en tiempo real
-docker-compose logs -f backend
+docker compose logs -f backend
 
-# Correr tests
-npm test                  # o: pytest
-npm run test:coverage     # con reporte de cobertura
+# Dependencias del backend (uv, dentro de backend/)
+uv sync                   # instala según pyproject.toml + uv.lock
+uv add <paquete>          # agrega dependencia y actualiza uv.lock
 
-# Linting
-npm run lint              # o: flake8 src/
-npm run lint:fix          # corrige automáticamente
+# Dependencias y scripts del frontend (pnpm, dentro de frontend/)
+pnpm install
+pnpm lint
+pnpm build
 
-# Migraciones de base de datos
-npm run db:migrate        # aplica migraciones pendientes
-npm run db:generate       # genera nueva migración desde cambio en schema
+# Migraciones de base de datos (Alembic)
+docker compose exec backend alembic upgrade head
+docker compose exec backend alembic revision --autogenerate -m "descripcion"
+
+# Tests (a futuro, todavía no hay suite)
+uv run pytest             # backend
+# pnpm test              # frontend (a futuro: todavía no hay script de tests)
 
 # Acceder a la base de datos
-docker exec -it postgrado-db psql -U postgrado_user -d postgrado_dev
+docker compose exec postgres psql -U postgrado_user -d postgrado_dev
 ```
 
 ---

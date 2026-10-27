@@ -1,37 +1,37 @@
-# Changelog — Sistema de  Posgrado
+# Changelog — Sistema de Posgrado
 
 Todos los cambios notables de este proyecto se documentan en este archivo.
 
-Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).  
+Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 Este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
-
----
 
 ## [Unreleased]
 
-> Los cambios que están en `develop` pero no en un release van acá.
+## [v0.1.0] - 2026-10-27
 
 ### Added
-- Estructura inicial del repositorio
-- Documentación base: SRS, PRD, BFD, Arquitectura, Cronograma
+- Workflow de Git: rama de integración `dev`, ramas `feat/T{N}-*` / `fix/*` y releases taggeados en `main`
+- `IMPLEMENTATION_PLAN.md` con el estado de cada ticket
+- Backend mínimo: FastAPI gestionado con uv, `GET /health` (liveness) y `GET /api/v1/cohortes`
+- Frontend mínimo: pantalla `/cohortes` (React + Vite + pnpm) con estados de carga, error y lista vacía, y proxy de Vite `/api/*` → backend
+- Docker Compose de desarrollo con `postgres:18.6`, backend y frontend (Dockerfiles simples)
+- README con la sección "Cómo levantar" verificable en máquina limpia
 
----
+### Changed
+- Backend movido de `src/core/` a `backend/` y de pip/`requirements.txt` a uv (`pyproject.toml` + `uv.lock`)
+- Frontend migrado de npm a pnpm y del puerto 3000 al 5173
+- CORS configurable con `CORS_ORIGINS`
+- CI reescrito para uv, pnpm y build del compose
+- CONTRIBUTING, SETUP_LOCAL y guías de entrega alineadas al workflow `dev` y al stack real
 
-## [v0.1.0-alpha] — Sprint 0 (esperado 15/05/2026)
+### Fixed
+- El backend no arrancaba: faltaba `email-validator` y bcrypt 5 rompía passlib (se fija `bcrypt<4.1`)
+- El arranque se aborta si fallan las migraciones (antes seguía al seed con el esquema roto)
+- Los logs de migraciones y seed de `init_db` no se veían
+- El backend fuera de Docker ignoraba el `.env`
+- Mensajes de error legibles en el frontend para errores de validación (422) y backend caído (502)
+- El CI corría npm sobre el backend Python y rutas inexistentes
 
-### Added
-- Autenticación JWT básica (login/logout)
-- Modelo de base de datos inicial con migraciones
-- Docker Compose funcional para ambiente de desarrollo
-- Pipeline de CI/CD base en GitHub Actions (lint + test + build)
-
----
-
-## Historial de versiones planificadas
-
-| Versión | Fecha planificada | Descripción |
-|---------|:-----------------:|------------|
-| v0.1.0-alpha | 15/05/2026 | Auth + DB + Docker |
-| v0.5.0-beta | 31/07/2026 | Core completo |
-| v0.8.0-rc | 11/09/2026 | Core + Módulo especializado |
-| v1.0.0 | 23/10/2026 | Sistema completo + docs |
+### Removed
+- Bytecode de Python (`__pycache__/*.pyc`) que estaba versionado por error
+- Servicio MailHog del compose de desarrollo

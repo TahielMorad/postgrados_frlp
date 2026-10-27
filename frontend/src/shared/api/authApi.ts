@@ -14,10 +14,7 @@ export async function loginApi(
     const emailNorm = email.trim().toLowerCase();
 
     // Aceptar admin@prueba.com y admin@fenix.test
-    if (
-      emailNorm === "admin@prueba.com" ||
-      emailNorm === "admin@fenix.test"
-    ) {
+    if (emailNorm === "admin@prueba.com" || emailNorm === "admin@fenix.test") {
       return {
         accessToken: "mock-jwt-token-coordinador-admin",
         usuario: {
@@ -28,7 +25,10 @@ export async function loginApi(
       };
     }
 
-    if (emailNorm === "docente@fenix.test" || emailNorm === "docente@prueba.com") {
+    if (
+      emailNorm === "docente@fenix.test" ||
+      emailNorm === "docente@prueba.com"
+    ) {
       return {
         accessToken: "mock-jwt-token-docente",
         usuario: {

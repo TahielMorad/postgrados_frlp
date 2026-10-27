@@ -112,17 +112,13 @@ export function LoginPage() {
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <button
               type="button"
-              onClick={() =>
-                usarCredencialDemo("admin@prueba.com", "admin123")
-              }
+              onClick={() => usarCredencialDemo("admin@prueba.com", "admin123")}
               className="flex flex-col items-start rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-left transition-colors hover:border-utn-400 hover:bg-utn-50"
             >
               <span className="font-bold text-neutral-900 text-sm">
                 Rol Coordinador / Admin
               </span>
-              <span className="text-xs text-neutral-600">
-                admin@prueba.com
-              </span>
+              <span className="text-xs text-neutral-600">admin@prueba.com</span>
               <span className="text-xs text-utn-700 font-semibold mt-1">
                 Usar credencial →
               </span>

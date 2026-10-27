@@ -36,3 +36,14 @@ logs/
 .idea/
 .vscode/
 *.swp
+
+# Python / uv
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node / pnpm
+.pnpm-store/
+.vite/

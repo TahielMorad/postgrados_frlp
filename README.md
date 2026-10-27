@@ -3,12 +3,65 @@
 
 [![Estado](https://img.shields.io/badge/estado-En%20Desarrollo-yellow)](#)
 [![Cobertura objetivo](https://img.shields.io/badge/cobertura-≥70%25-green)](#)
-[![Semana actual](https://img.shields.io/badge/semana-1%20de%2032-blue)](#)
+[![Versión](https://img.shields.io/badge/versión-v0.1.0-blue)](CHANGELOG.md)
 
 > **Proyecto integrador** de la cátedra **Desarrollo de Software** — 3° año · Turno Noche · Ingeniería en Sistemas de Información · UTN FRLP · 2026
 
 📌 **[Guía de Entrega 2 (Frontend y Diseño Institucional)](docs/ENTREGA_2.md)**  
 📌 **[Guía Completa de Entrega 3 (Integración Back y Front)](docs/ENTREGA_3.md)**
+
+---
+
+## 🚀 Cómo levantar
+
+> **Requisitos:** Git · Docker 24+ · Docker Compose v2. No hace falta instalar Python ni Node: todo corre en contenedores.
+
+```bash
+git clone git@github.com:TahielMorad/postgrados_frlp.git
+cd postgrados_frlp
+cp .env.example .env
+docker compose up
+# → frontend: http://localhost:5173
+# → backend:  http://localhost:8000/health
+```
+
+La primera vez tarda unos minutos (construye las imágenes). El backend corre las migraciones de Alembic y carga los datos semilla solo, al arrancar.
+
+### Verificación
+
+| Qué | Cómo | Resultado esperado |
+|-----|------|--------------------|
+| Backend vivo | `curl http://localhost:8000/health` | `{"status":"ok"}` |
+| Backend + base de datos | `curl http://localhost:8000/api/v1/health` | `"database":"conectada"` |
+| Endpoint de dominio | `curl http://localhost:8000/api/v1/cohortes` | Lista de cohortes (JSON) |
+| Frontend | Abrir http://localhost:5173/cohortes | Pantalla con las cohortes cargadas desde el backend |
+| Documentación de la API | Abrir http://localhost:8000/api/v1/docs | Swagger UI |
+
+### Servicios
+
+| Servicio | Tecnología | Puerto host |
+|----------|------------|-------------|
+| `postgres` | PostgreSQL 18.6 (imagen oficial) | `5432` (`DB_PORT`) |
+| `backend` | FastAPI + uv · Python 3.12 | `8000` (`BACKEND_PORT`) |
+| `frontend` | React 19 + Vite + pnpm | `5173` (`FRONTEND_PORT`) |
+
+El frontend llama a `/api/*` y el proxy de Vite lo reenvía al backend, así que no hay que configurar URLs ni CORS.
+
+### Problemas comunes
+
+- **`port is already allocated`**: ya tenés algo usando ese puerto (por ejemplo un Postgres local en 5432). Cambiá `DB_PORT`, `BACKEND_PORT` o `FRONTEND_PORT` en `.env` y volvé a correr `docker compose up`.
+- **Empezar con la base limpia**: `docker compose down -v && docker compose up`.
+- **Cambié dependencias** (`pyproject.toml` / `package.json`): `docker compose up --build`.
+
+### Desarrollo sin Docker (opcional)
+
+```bash
+# Backend (requiere uv y un Postgres accesible según DATABASE_URL del .env)
+cd backend && uv sync && uv run python init_db.py && uv run uvicorn main:app --reload
+
+# Frontend (requiere Node 20.19+ y pnpm)
+cd frontend && pnpm install && pnpm dev
+```
 
 ---
 
@@ -31,7 +84,7 @@
 ### Reglas básicas del equipo
 
 - **Commits**: Usa mensajes claros y en presente (ej: "Agrega login con GitHub"). Sigue la convención [Conventional Commits](https://www.conventionalcommits.org) si es posible.
-- **Branching**: Nunca pushes directos a `main`. Crea una rama con tu nombre o tarea (`feature/nombre-tarea` o `bugfix/...`).
+- **Branching**: `main` solo recibe releases taggeados (`vX.Y.Z`) desde `dev`. Toda rama de trabajo nace de `dev` y vuelve a `dev`: `feat/T{N}-descripcion-corta` o `fix/descripcion-corta`.
 - **Pull Requests**: Siempre abre un PR para revisar el código. Mínimo 1 aprobación antes de mergear.
 - **Código**: Mantén el código limpio, comenta lo complejo y respeta el estilo del proyecto (usa el `.editorconfig` si existe).
 - **Issues**: Reporta bugs o ideas en la sección de Issues con la plantilla correspondiente.
@@ -48,7 +101,7 @@
 
 **Cualquier duda** → Pregunta primero en el canal de #general o abre un Issue.
 
-**Completa luego** [`docs\onboarding\TEAM_CHARTER.md`] (TEAM_CHARTER.md) 
+**Completa luego** [`onboarding/TEAM_CHARTER.md`](onboarding/TEAM_CHARTER.md) 
 
 ---
 
@@ -62,7 +115,7 @@ Lee en este orden antes de escribir código:
 3. 📦 [`docs/PRD.md`](docs/PRD.md) — Detalle funcional con criterios de aceptación (Gherkin)
 4. 🏗️ [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) — Cómo estructurar el código
 5. 🗓️ [`docs/CRONOGRAMA.md`](docs/CRONOGRAMA.md) — Tu roadmap personal de las próximas 30 semanas
-6. 🚀 [`onboarding/Guia_KickOff.md`](docs/onboarding/GUIA_KICKOFF.md) — Qué entregar en la semana 3
+6. 🚀 [`onboarding/Guia_KickOff.md`](onboarding/Guia_KickOff.md) — Qué entregar en la semana 3
 ---
 
 ## Estructura de Módulos
@@ -76,43 +129,10 @@ Lee en este orden antes de escribir código:
 
 ---
 
-## Quickstart — Levantá el entorno en 5 minutos
-
-> **Requisitos previos:** Git · Docker Desktop · Node.js 20+ (o Python 3.11+)
-
-```bash
-# 1. Cloná tu repositorio (URL provisto por GitHub)
-git clone https://github.com/desasoftfrlptn/postgrados_frlp.git
-cd postgrado-[NOMBRE-EQUIPO]
-
-# 2. Configurá variables de entorno
-cp .env.example .env
-
-# 3. Levantá los servicios (base de datos + backend + frontend)
-docker-compose up -d
-
-# 4. Instalá dependencias
-npm install        # Si usás Node/NestJS
-# -- ó --
-pip install -r requirements.txt  # Si usás Python/FastAPI
-
-# 5. Ejecutá las migraciones de base de datos
-npm run db:migrate   # Prisma
-# -- ó --
-alembic upgrade head  # SQLAlchemy
-
-# 6. Iniciá el servidor de desarrollo
-npm run dev
-```
-
-✅ **Criterio de éxito:** La app corre en `http://localhost:3000` sin errores en consola.
-
----
-
 ## Estructura del Repositorio
 
 ```
-postgrado-[equipo]/
+postgrados_frlp/
 ├── README.md                     ← Empezá acá
 ├── CONTRIBUTING.md               ← Cómo trabajar: ramas, commits, PRs
 ├── CHANGELOG.md                  ← Historial de cambios por versión
@@ -125,22 +145,24 @@ postgrado-[equipo]/
 │   ├── BFD.md                    ← Business Flow Diagram
 │   ├── ARQUITECTURA.md           ← Decisiones técnicas + diagramas C4
 │   ├── CRONOGRAMA.md             ← Roadmap con fechas reales (abr–nov 2026)
-│   ├── BACKLOG_MODELO.md         ← Historias de usuario base + plantillas
-│   ├── DEFINITION_OF_DONE.md    ← Criterios de completitud del equipo
+│   ├── BACKLOG.md                ← Historias de usuario del equipo
+│   ├── DEFINITION_OF_DONE.md     ← Criterios de completitud del equipo
 │   ├── ASR.md                    ← Requisitos arquitectónicamente significativos
-│   │
-│   ├── onboarding/
-│   │   ├── GUIA_KICKOFF.md       ← Qué hacer en las primeras 3 semanas
-│   │   ├── SETUP_LOCAL.md        ← Setup paso a paso con troubleshooting
-│   │   └── TEAM_CHARTER.md       ← Contrato social del equipo (completar)
-│   │
-│   └── adr/                      ← Registro de decisiones de arquitectura
-│       ├── ADR-000-template.md
-│       └── ADR-001-stack.md      ← Primera decisión: elección de stack
+│   └── ENTREGA_2.md / ENTREGA_3.md ← Guías de entregas
 │
-├── src/
-│   ├── core/                     ← Módulo Core (TODOS los equipos)
-│   └── mod-[b|c|d]/              ← Módulo especializado asignado
+├── onboarding/
+│   ├── Guia_KickOff.md           ← Qué hacer en las primeras 3 semanas
+│   ├── SETUP_LOCAL.md            ← Setup paso a paso con troubleshooting
+│   └── TEAM_CHARTER.md           ← Contrato social del equipo
+│
+├── adr/                          ← Registro de decisiones de arquitectura
+│   ├── ADR-000-template.md
+│   └── ADR-001-stack.md          ← Primera decisión: elección de stack
+│
+├── IMPLEMENTATION_PLAN.md        ← Plan de implementación con estado por ticket
+│
+├── backend/                      ← API REST (FastAPI + uv + SQLAlchemy + Alembic)
+├── frontend/                     ← SPA (React 19 + TypeScript + Vite + pnpm)
 │
 └── .github/
     └── workflows/
@@ -179,10 +201,10 @@ postgrado-[equipo]/
 
 Una historia de usuario está **terminada** cuando cumple **todos** estos criterios:
 
-- [ ] Código mergeado a `main` via **Pull Request** con al menos 1 code review aprobado
+- [ ] Código mergeado a `dev` (vía Pull Request con al menos 1 code review aprobado); a `main` solo llega en un release taggeado
 - [ ] **Tests unitarios pasando** con ≥70% de cobertura en la lógica nueva
 - [ ] **Linter sin errores** (ESLint + Prettier para JS/TS · PEP8 para Python)
-- [ ] **Documentación de API actualizada** (Swagger/OpenAPI en `/api/docs`)
+- [ ] **Documentación de API actualizada** (Swagger/OpenAPI en `/api/v1/docs`)
 - [ ] **Probado en el entorno local de otro integrante** del equipo
 - [ ] **`CHANGELOG.md` actualizado** con descripción del cambio
 
@@ -207,17 +229,17 @@ Una historia de usuario está **terminada** cuando cumple **todos** estos criter
 
 | Capa              | Recomendado (Prioridad: Simplicidad + Demanda) | Alternativa (Mayor estructura / Enterprise) | Justificación |
 |-------------------|------------------------------------------------|---------------------------------------------|-------------|
-| **Frontend**     | **React 19 + TypeScript + Vite + TailwindCSS + TanStack Query** | Next.js 15+ (App Router) | React sigue siendo la tecnología frontend **más demandada** del mercado. Vite es muy rápido y simple. TanStack Query simplifica mucho la gestión de datos. |
+| **Frontend**     | **React 19 + TypeScript + Vite + TailwindCSS (pnpm)** | Next.js 15+ (App Router) | React sigue siendo la tecnología frontend **más demandada** del mercado. Vite es muy rápido y simple. TanStack Query simplifica mucho la gestión de datos. |
 | **Backend**      | **FastAPI (Python 3.12+)**                    | NestJS (TypeScript)                        | FastAPI es **mucho más simple**, rápido de desarrollar, tiene documentación automática (Swagger) y excelente rendimiento. Ideal para proyectos académicos y APIs modernas. NestJS ofrece más estructura pero aumenta la complejidad. |
 | **ORM / DB Layer** | **SQLAlchemy 2.0 + Alembic** (con async support) | Tortoise ORM o Prisma (si vas full TypeScript) | SQLAlchemy es el estándar más maduro y potente para Python. Alembic maneja migraciones muy bien. Para proyectos simples también puedes usar **SQLModel** (de tiangolo, creador de FastAPI) → aún más simple. |
-| **Base de Datos** | **PostgreSQL 16/17 (Docker)**                 | ← igual                                    | Mejor relación rendimiento / features / ecosistema. Excelente con Docker. |
+| **Base de Datos** | **PostgreSQL 18.6 (Docker)**                  | ← igual                                    | Mejor relación rendimiento / features / ecosistema. Excelente con Docker. |
 | **Testing**       | **Pytest + HTTPX** (unitarias + integración) + **Playwright** (E2E opcional) | Vitest + Supertest (si usas NestJS)       | Pytest es muy simple y potente. Enfocarte solo en **unitarias** como dijiste es una buena decisión para no complicar el proyecto. |
 | **DevOps / Infra**| **Docker + Docker Compose + GitHub Actions** | ← igual                                    | Estándar actual. Muy simple de configurar con `docker-compose.yml`. |
 
 ### Por qué elegimos este stack
 
 - **Alta empleabilidad**: React y PostgreSQL son de las tecnologías más solicitadas en 2026.
-- **Simplicidad y velocidad de desarrollo**: FastAPI + SQLModel permite crear APIs completas con muy poco código.
+- **Simplicidad y velocidad de desarrollo**: FastAPI + SQLAlchemy permite crear APIs completas con muy poco código.
 - **Moderno pero maduro**: Evitamos tecnologías demasiado experimentales.
 - **Full Docker**: Todo el entorno se levanta con un solo comando (`docker compose up`).
 

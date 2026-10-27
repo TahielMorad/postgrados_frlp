@@ -1,0 +1,23 @@
+[project]
+name = "postgrados-backend"
+version = "0.1.0"
+description = "Backend API del Sistema de Posgrados UTN FRLP"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0,<0.116.0",
+    "uvicorn[standard]>=0.30.0,<0.31.0",
+    "pydantic[email]>=2.7.0,<3.0.0",
+    "pydantic-settings>=2.2.0,<3.0.0",
+    "sqlalchemy>=2.0.30,<2.1.0",
+    "alembic>=1.13.0,<1.14.0",
+    "psycopg2-binary>=2.9.9,<3.0.0",
+    "python-jose[cryptography]>=3.3.0,<3.4.0",
+    "passlib[bcrypt]>=1.7.4,<1.8.0",
+    # passlib 1.7.4 no es compatible con bcrypt>=4.1 (falla al hashear).
+    "bcrypt>=4.0.1,<4.1",
+    "python-multipart>=0.0.9,<0.1.0",
+    "openpyxl>=3.1.2,<3.2.0",
+]
+
+[tool.uv]
+package = false
