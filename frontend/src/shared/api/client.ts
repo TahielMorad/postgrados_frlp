@@ -1,5 +1,6 @@
-const BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
+// Por defecto se usa una ruta relativa para que las requests pasen por el
+// proxy de Vite (`/api` -> backend). Se puede sobrescribir con VITE_API_URL.
+export const BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 
 export async function apiFetch<T>(
   endpoint: string,
@@ -26,7 +27,9 @@ export async function apiFetch<T>(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.message || errorData.detail || `Error HTTP ${response.status}`,
+        errorData.message ||
+          errorData.detail ||
+          `Error HTTP ${response.status}`,
       );
     }
 

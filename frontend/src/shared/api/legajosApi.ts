@@ -5,7 +5,7 @@ import type {
   LegajoListado,
 } from "../../features/legajos/types/legajo";
 import { filtrarLegajos } from "../../features/legajos/utils/filtrarLegajos";
-import { apiFetch } from "./client";
+import { apiFetch, BASE_URL } from "./client";
 
 const LOCAL_STORAGE_LEGAJOS_KEY = "posgrados_legajos_store";
 
@@ -114,9 +114,6 @@ export async function subirDocumentoApi(
     formData.append("file", archivo);
 
     const token = localStorage.getItem("auth_token");
-    const BASE_URL =
-      import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
-
     const res = await fetch(`${BASE_URL}/legajos/${legajoId}/documentos`, {
       method: "POST",
       headers: {
