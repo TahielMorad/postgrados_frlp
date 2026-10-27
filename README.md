@@ -25,7 +25,43 @@ docker compose up
 # → backend:  http://localhost:8000/health
 ```
 
-_(Sección en construcción: se completa en T4 con la verificación del docker compose de desarrollo.)_
+La primera vez tarda unos minutos (construye las imágenes). El backend corre las migraciones de Alembic y carga los datos semilla solo, al arrancar.
+
+### Verificación
+
+| Qué | Cómo | Resultado esperado |
+|-----|------|--------------------|
+| Backend vivo | `curl http://localhost:8000/health` | `{"status":"ok"}` |
+| Backend + base de datos | `curl http://localhost:8000/api/v1/health` | `"database":"conectada"` |
+| Endpoint de dominio | `curl http://localhost:8000/api/v1/cohortes` | Lista de cohortes (JSON) |
+| Frontend | Abrir http://localhost:5173/cohortes | Pantalla con las cohortes cargadas desde el backend |
+| Documentación de la API | Abrir http://localhost:8000/api/v1/docs | Swagger UI |
+
+### Servicios
+
+| Servicio | Tecnología | Puerto host |
+|----------|------------|-------------|
+| `postgres` | PostgreSQL 18.6 (imagen oficial) | `5432` (`DB_PORT`) |
+| `backend` | FastAPI + uv · Python 3.12 | `8000` (`BACKEND_PORT`) |
+| `frontend` | React 19 + Vite + pnpm | `5173` (`FRONTEND_PORT`) |
+
+El frontend llama a `/api/*` y el proxy de Vite lo reenvía al backend, así que no hay que configurar URLs ni CORS.
+
+### Problemas comunes
+
+- **`port is already allocated`**: ya tenés algo usando ese puerto (por ejemplo un Postgres local en 5432). Cambiá `DB_PORT`, `BACKEND_PORT` o `FRONTEND_PORT` en `.env` y volvé a correr `docker compose up`.
+- **Empezar con la base limpia**: `docker compose down -v && docker compose up`.
+- **Cambié dependencias** (`pyproject.toml` / `package.json`): `docker compose up --build`.
+
+### Desarrollo sin Docker (opcional)
+
+```bash
+# Backend (requiere uv y un Postgres accesible según DATABASE_URL del .env)
+cd backend && uv sync && uv run python init_db.py && uv run uvicorn main:app --reload
+
+# Frontend (requiere Node 20.19+ y pnpm)
+cd frontend && pnpm install && pnpm dev
+```
 
 ---
 
