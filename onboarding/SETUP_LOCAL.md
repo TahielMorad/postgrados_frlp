@@ -42,7 +42,7 @@ cd postgrado-[NOMBRE-EQUIPO]
 
 # Verificar que estás en la rama principal
 git branch
-# Deberías ver: * main
+# Deberías ver: * dev  (o * main, según la rama por defecto del clon)
 
 # Para trabajar, pasate a la rama de integración
 git checkout dev
@@ -290,14 +290,14 @@ netstat -ano | findstr :5432
 
 ---
 
-### ❌ El servicio `backend` en estado "Restarting"
+### ❌ El servicio `backend` en estado "Exited"
 
 ```bash
 # Ver el error exacto
 docker compose logs backend --tail=50
 
 # Causas frecuentes:
-# 1. La DB no terminó de iniciar → esperar 30 seg y correr: docker compose restart backend
+# 1. Fallaron las migraciones (init_db aborta con exit 1) → revisar el error y correr: docker compose up -d backend
 # 2. Error de sintaxis en el código → el log muestra el traceback completo
 # 3. Variable de entorno faltante → revisar que .env existe y tiene DATABASE_URL
 # 4. Puerto 8000 ocupado por otra app → ver troubleshooting anterior
@@ -317,9 +317,10 @@ docker compose ps
 # Intentar nuevamente
 docker compose exec backend alembic upgrade head
 
-# Si sigue fallando, verificar DATABASE_URL en .env:
-# El host debe ser "postgres" (nombre del servicio en docker-compose), no "localhost"
-# Ej: postgresql://postgrado_user:<password>@postgres:5432/postgrado_dev
+# Dentro de Docker el compose arma DATABASE_URL solo (host "postgres", puerto 5432):
+# la DATABASE_URL del .env NO se usa en los contenedores.
+# Si corrés el backend FUERA de Docker, la DATABASE_URL del .env debe usar
+# host "localhost" y el puerto de DB_PORT. Ej: postgresql://postgrado_user:<password>@localhost:5432/postgrado_dev
 ```
 
 ---
