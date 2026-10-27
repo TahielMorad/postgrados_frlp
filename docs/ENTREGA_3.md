@@ -65,7 +65,7 @@ postgrados_frlp/
 │   │   │   ├── api/             # Cliente HTTP apiFetch, legajosApi, authApi
 │   │   │   └── auth/            # AuthContext y ProtectedRoute
 │   │   └── routes/              # Configuración de rutas
-├── src/core/                    # Backend REST API (FastAPI + Clean Architecture)
+├── backend/                     # Backend REST API (FastAPI + Clean Architecture)
 │   ├── main.py                  # Punto de entrada FastAPI y configuración de CORS
 │   ├── database.py              # Engine y Session de SQLAlchemy
 │   ├── security.py              # Hasheo bcrypt y firmas JWT
