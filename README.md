@@ -12,6 +12,23 @@
 
 ---
 
+## 🚀 Cómo levantar
+
+> **Requisitos:** Git · Docker 24+ · Docker Compose v2. No hace falta instalar Python ni Node: todo corre en contenedores.
+
+```bash
+git clone git@github.com:TahielMorad/postgrados_frlp.git
+cd postgrados_frlp
+cp .env.example .env
+docker compose up
+# → frontend: http://localhost:5173
+# → backend:  http://localhost:8000/health
+```
+
+_(Sección en construcción: se completa en T4 con la verificación del docker compose de desarrollo.)_
+
+---
+
 ## ¿Qué es este proyecto?
 
 **Sistema Postgrados** reemplaza el proceso manual de gestión de posgrado de UTN FRLP —hoy basado en Excel, carpetas físicas y correos— por una plataforma web centralizada que digitaliza el ciclo de vida del estudiante: desde la preinscripción hasta la graduación.
@@ -31,7 +48,7 @@
 ### Reglas básicas del equipo
 
 - **Commits**: Usa mensajes claros y en presente (ej: "Agrega login con GitHub"). Sigue la convención [Conventional Commits](https://www.conventionalcommits.org) si es posible.
-- **Branching**: Nunca pushes directos a `main`. Crea una rama con tu nombre o tarea (`feature/nombre-tarea` o `bugfix/...`).
+- **Branching**: `main` solo recibe releases taggeados (`vX.Y.Z`) desde `dev`. Toda rama de trabajo nace de `dev` y vuelve a `dev`: `feat/T{N}-descripcion-corta` o `fix/descripcion-corta`.
 - **Pull Requests**: Siempre abre un PR para revisar el código. Mínimo 1 aprobación antes de mergear.
 - **Código**: Mantén el código limpio, comenta lo complejo y respeta el estilo del proyecto (usa el `.editorconfig` si existe).
 - **Issues**: Reporta bugs o ideas en la sección de Issues con la plantilla correspondiente.
@@ -76,43 +93,10 @@ Lee en este orden antes de escribir código:
 
 ---
 
-## Quickstart — Levantá el entorno en 5 minutos
-
-> **Requisitos previos:** Git · Docker Desktop · Node.js 20+ (o Python 3.11+)
-
-```bash
-# 1. Cloná tu repositorio (URL provisto por GitHub)
-git clone https://github.com/desasoftfrlptn/postgrados_frlp.git
-cd postgrado-[NOMBRE-EQUIPO]
-
-# 2. Configurá variables de entorno
-cp .env.example .env
-
-# 3. Levantá los servicios (base de datos + backend + frontend)
-docker-compose up -d
-
-# 4. Instalá dependencias
-npm install        # Si usás Node/NestJS
-# -- ó --
-pip install -r requirements.txt  # Si usás Python/FastAPI
-
-# 5. Ejecutá las migraciones de base de datos
-npm run db:migrate   # Prisma
-# -- ó --
-alembic upgrade head  # SQLAlchemy
-
-# 6. Iniciá el servidor de desarrollo
-npm run dev
-```
-
-✅ **Criterio de éxito:** La app corre en `http://localhost:3000` sin errores en consola.
-
----
-
 ## Estructura del Repositorio
 
 ```
-postgrado-[equipo]/
+postgrados_frlp/
 ├── README.md                     ← Empezá acá
 ├── CONTRIBUTING.md               ← Cómo trabajar: ramas, commits, PRs
 ├── CHANGELOG.md                  ← Historial de cambios por versión
@@ -138,9 +122,10 @@ postgrado-[equipo]/
 │       ├── ADR-000-template.md
 │       └── ADR-001-stack.md      ← Primera decisión: elección de stack
 │
-├── src/
-│   ├── core/                     ← Módulo Core (TODOS los equipos)
-│   └── mod-[b|c|d]/              ← Módulo especializado asignado
+├── IMPLEMENTATION_PLAN.md        ← Plan de implementación con estado por ticket
+│
+├── backend/                      ← API REST (FastAPI + uv + SQLAlchemy + Alembic)
+├── frontend/                     ← SPA (React 19 + TypeScript + Vite + pnpm)
 │
 └── .github/
     └── workflows/
