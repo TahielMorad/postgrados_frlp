@@ -27,6 +27,10 @@ export function HomePage() {
                 <span aria-hidden="true">→</span>
               </ButtonLink>
 
+              <ButtonLink to="/cohortes" variant="secondary" size="lg">
+                Ver cohortes
+              </ButtonLink>
+
               <ButtonLink
                 to="/coordinador/legajos"
                 variant="secondary"

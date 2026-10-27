@@ -97,6 +97,9 @@ export function AppShell({ children }: AppShellProps) {
             <NavLink to="/" end className={navLinkClassName}>
               Inicio
             </NavLink>
+            <NavLink to="/cohortes" className={navLinkClassName}>
+              Cohortes
+            </NavLink>
             <NavLink to="/inscripcion" className={navLinkClassName}>
               Inscripción
             </NavLink>
