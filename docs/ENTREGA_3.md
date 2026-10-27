@@ -17,12 +17,17 @@
    cd postgrados_frlp
    ```
 
-2. **Levantar todos los servicios con Docker Compose:**
+2. **Crear el archivo de variables de entorno:**
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Levantar todos los servicios con Docker Compose:**
    ```bash
    docker compose up -d --build
    ```
 
-3. **Verificar el estado de los contenedores:**
+4. **Verificar el estado de los contenedores:**
    ```bash
    docker compose ps
    ```
@@ -75,7 +80,7 @@ postgrados_frlp/
 │   ├── alembic/                 # Migraciones DDL versionadas de base de datos
 │   ├── models/                  # Entidades ORM (Legajo, Cohorte, Documento, Auditoria, Usuario)
 │   ├── schemas/                 # DTOs de validación con Pydantic v2
-│   ├── routers/                 # Endpoints REST (/auth, /legajos, /documentos, /health)
+│   ├── routers/                 # Endpoints REST (/auth, /legajos, /documentos, /cohortes, /health)
 │   └── services/                # Servicio de almacenamiento seguro de archivos PDF
 └── docs/                        # Documentación técnica y especificaciones
 ```

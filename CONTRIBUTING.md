@@ -223,7 +223,7 @@ docker compose exec backend alembic revision --autogenerate -m "descripcion"
 
 # Tests (a futuro, todavía no hay suite)
 uv run pytest             # backend
-pnpm test                 # frontend
+# pnpm test              # frontend (a futuro: todavía no hay script de tests)
 
 # Acceder a la base de datos
 docker compose exec postgres psql -U postgrado_user -d postgrado_dev

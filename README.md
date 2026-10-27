@@ -3,7 +3,7 @@
 
 [![Estado](https://img.shields.io/badge/estado-En%20Desarrollo-yellow)](#)
 [![Cobertura objetivo](https://img.shields.io/badge/cobertura-≥70%25-green)](#)
-[![Semana actual](https://img.shields.io/badge/semana-1%20de%2032-blue)](#)
+[![Versión](https://img.shields.io/badge/versión-v0.1.0-blue)](CHANGELOG.md)
 
 > **Proyecto integrador** de la cátedra **Desarrollo de Software** — 3° año · Turno Noche · Ingeniería en Sistemas de Información · UTN FRLP · 2026
 
@@ -101,7 +101,7 @@ cd frontend && pnpm install && pnpm dev
 
 **Cualquier duda** → Pregunta primero en el canal de #general o abre un Issue.
 
-**Completa luego** [`docs\onboarding\TEAM_CHARTER.md`] (TEAM_CHARTER.md) 
+**Completa luego** [`onboarding/TEAM_CHARTER.md`](onboarding/TEAM_CHARTER.md) 
 
 ---
 
@@ -115,7 +115,7 @@ Lee en este orden antes de escribir código:
 3. 📦 [`docs/PRD.md`](docs/PRD.md) — Detalle funcional con criterios de aceptación (Gherkin)
 4. 🏗️ [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) — Cómo estructurar el código
 5. 🗓️ [`docs/CRONOGRAMA.md`](docs/CRONOGRAMA.md) — Tu roadmap personal de las próximas 30 semanas
-6. 🚀 [`onboarding/Guia_KickOff.md`](docs/onboarding/GUIA_KICKOFF.md) — Qué entregar en la semana 3
+6. 🚀 [`onboarding/Guia_KickOff.md`](onboarding/Guia_KickOff.md) — Qué entregar en la semana 3
 ---
 
 ## Estructura de Módulos
@@ -145,18 +145,19 @@ postgrados_frlp/
 │   ├── BFD.md                    ← Business Flow Diagram
 │   ├── ARQUITECTURA.md           ← Decisiones técnicas + diagramas C4
 │   ├── CRONOGRAMA.md             ← Roadmap con fechas reales (abr–nov 2026)
-│   ├── BACKLOG_MODELO.md         ← Historias de usuario base + plantillas
-│   ├── DEFINITION_OF_DONE.md    ← Criterios de completitud del equipo
+│   ├── BACKLOG.md                ← Historias de usuario del equipo
+│   ├── DEFINITION_OF_DONE.md     ← Criterios de completitud del equipo
 │   ├── ASR.md                    ← Requisitos arquitectónicamente significativos
-│   │
-│   ├── onboarding/
-│   │   ├── GUIA_KICKOFF.md       ← Qué hacer en las primeras 3 semanas
-│   │   ├── SETUP_LOCAL.md        ← Setup paso a paso con troubleshooting
-│   │   └── TEAM_CHARTER.md       ← Contrato social del equipo (completar)
-│   │
-│   └── adr/                      ← Registro de decisiones de arquitectura
-│       ├── ADR-000-template.md
-│       └── ADR-001-stack.md      ← Primera decisión: elección de stack
+│   └── ENTREGA_2.md / ENTREGA_3.md ← Guías de entregas
+│
+├── onboarding/
+│   ├── Guia_KickOff.md           ← Qué hacer en las primeras 3 semanas
+│   ├── SETUP_LOCAL.md            ← Setup paso a paso con troubleshooting
+│   └── TEAM_CHARTER.md           ← Contrato social del equipo
+│
+├── adr/                          ← Registro de decisiones de arquitectura
+│   ├── ADR-000-template.md
+│   └── ADR-001-stack.md          ← Primera decisión: elección de stack
 │
 ├── IMPLEMENTATION_PLAN.md        ← Plan de implementación con estado por ticket
 │
@@ -200,10 +201,10 @@ postgrados_frlp/
 
 Una historia de usuario está **terminada** cuando cumple **todos** estos criterios:
 
-- [ ] Código mergeado a `main` via **Pull Request** con al menos 1 code review aprobado
+- [ ] Código mergeado a `dev` (vía Pull Request con al menos 1 code review aprobado); a `main` solo llega en un release taggeado
 - [ ] **Tests unitarios pasando** con ≥70% de cobertura en la lógica nueva
 - [ ] **Linter sin errores** (ESLint + Prettier para JS/TS · PEP8 para Python)
-- [ ] **Documentación de API actualizada** (Swagger/OpenAPI en `/api/docs`)
+- [ ] **Documentación de API actualizada** (Swagger/OpenAPI en `/api/v1/docs`)
 - [ ] **Probado en el entorno local de otro integrante** del equipo
 - [ ] **`CHANGELOG.md` actualizado** con descripción del cambio
 
@@ -228,17 +229,17 @@ Una historia de usuario está **terminada** cuando cumple **todos** estos criter
 
 | Capa              | Recomendado (Prioridad: Simplicidad + Demanda) | Alternativa (Mayor estructura / Enterprise) | Justificación |
 |-------------------|------------------------------------------------|---------------------------------------------|-------------|
-| **Frontend**     | **React 19 + TypeScript + Vite + TailwindCSS + TanStack Query** | Next.js 15+ (App Router) | React sigue siendo la tecnología frontend **más demandada** del mercado. Vite es muy rápido y simple. TanStack Query simplifica mucho la gestión de datos. |
+| **Frontend**     | **React 19 + TypeScript + Vite + TailwindCSS (pnpm)** | Next.js 15+ (App Router) | React sigue siendo la tecnología frontend **más demandada** del mercado. Vite es muy rápido y simple. TanStack Query simplifica mucho la gestión de datos. |
 | **Backend**      | **FastAPI (Python 3.12+)**                    | NestJS (TypeScript)                        | FastAPI es **mucho más simple**, rápido de desarrollar, tiene documentación automática (Swagger) y excelente rendimiento. Ideal para proyectos académicos y APIs modernas. NestJS ofrece más estructura pero aumenta la complejidad. |
 | **ORM / DB Layer** | **SQLAlchemy 2.0 + Alembic** (con async support) | Tortoise ORM o Prisma (si vas full TypeScript) | SQLAlchemy es el estándar más maduro y potente para Python. Alembic maneja migraciones muy bien. Para proyectos simples también puedes usar **SQLModel** (de tiangolo, creador de FastAPI) → aún más simple. |
-| **Base de Datos** | **PostgreSQL 16/17 (Docker)**                 | ← igual                                    | Mejor relación rendimiento / features / ecosistema. Excelente con Docker. |
+| **Base de Datos** | **PostgreSQL 18.6 (Docker)**                  | ← igual                                    | Mejor relación rendimiento / features / ecosistema. Excelente con Docker. |
 | **Testing**       | **Pytest + HTTPX** (unitarias + integración) + **Playwright** (E2E opcional) | Vitest + Supertest (si usas NestJS)       | Pytest es muy simple y potente. Enfocarte solo en **unitarias** como dijiste es una buena decisión para no complicar el proyecto. |
 | **DevOps / Infra**| **Docker + Docker Compose + GitHub Actions** | ← igual                                    | Estándar actual. Muy simple de configurar con `docker-compose.yml`. |
 
 ### Por qué elegimos este stack
 
 - **Alta empleabilidad**: React y PostgreSQL son de las tecnologías más solicitadas en 2026.
-- **Simplicidad y velocidad de desarrollo**: FastAPI + SQLModel permite crear APIs completas con muy poco código.
+- **Simplicidad y velocidad de desarrollo**: FastAPI + SQLAlchemy permite crear APIs completas con muy poco código.
 - **Moderno pero maduro**: Evitamos tecnologías demasiado experimentales.
 - **Full Docker**: Todo el entorno se levanta con un solo comando (`docker compose up`).
 
