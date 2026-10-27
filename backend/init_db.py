@@ -7,6 +7,8 @@ from services.seed_service import run_seed_data
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("init_db")
+# alembic.ini deja el root logger en WARN; este módulo informa en INFO.
+logger.setLevel(logging.INFO)
 
 def init_db():
     logger.info("Corriendo migraciones Alembic (alembic upgrade head)...")
