@@ -12,5 +12,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
     STORAGE_PATH: str = os.getenv("STORAGE_PATH", "/var/postgrado-storage")
+    # Orígenes permitidos por CORS, separados por comas.
+    CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
 settings = Settings()
