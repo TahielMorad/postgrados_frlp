@@ -14,8 +14,11 @@ def init_db():
         alembic_cfg = Config("alembic.ini")
         command.upgrade(alembic_cfg, "head")
         logger.info("Migraciones ejecutadas exitosamente.")
-    except Exception as e:
-        logger.warning(f"Excepción al ejecutar migraciones Alembic: {e}")
+    except Exception:
+        # Sin esquema el seed y la API fallarían igual: cortamos el arranque
+        # para que el error quede a la vista en los logs del contenedor.
+        logger.exception("Fallaron las migraciones Alembic; se aborta el arranque.")
+        sys.exit(1)
 
     logger.info("Cargando datos semilla (seed data)...")
     db = SessionLocal()
